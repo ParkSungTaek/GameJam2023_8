@@ -96,4 +96,36 @@ public class Util
         string json = jsonTxt.text;
         return JsonUtility.FromJson<Handler>($"{{\"{handle}\" : {json} }}");
     }
+    public static GameObject GetObjRaycast2D(int LayerMask = (1<<0))
+    {
+        GameObject target = null;
+
+
+        Vector2 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Ray2D ray = new Ray2D(pos, Vector2.zero);
+        RaycastHit2D hit;
+        hit = Physics2D.Raycast(ray.origin, ray.direction, Mathf.Infinity, LayerMask);
+
+        if (hit) //마우스 근처에 오브젝트가 있는지 확인
+        {
+            //있으면 오브젝트를 저장한다.
+            target = hit.collider.gameObject;
+        }
+        return target;
+    }
+    public static GameObject GetObjRaycast3D(int LayerMask = (1<<0))
+    {
+        GameObject target = null;
+
+        RaycastHit hit;
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, LayerMask))
+        {
+            target = hit.transform.gameObject;
+            // Do something with the object that was hit by the raycast.
+        }
+
+        return target;
+    }
 }

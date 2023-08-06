@@ -36,6 +36,7 @@ public class Define
     /// </summary>
     public enum UIEvent
     {
+        Down,
         Click,
         Drag,
         DragEnd,
@@ -46,6 +47,12 @@ public class Define
         Title,
         Loby,
         Game,
+    }
+
+    public enum PoolingType
+    {
+        
+        DontPool,
     }
 
 
