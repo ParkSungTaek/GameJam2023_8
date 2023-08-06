@@ -13,7 +13,7 @@ public class SyncController : MonoBehaviour
 
 
     #region Data
-    public const float SyncTime = 10f;
+    public const float SyncTime = 3f;
 
     #endregion Data
 
