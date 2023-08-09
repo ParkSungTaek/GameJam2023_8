@@ -88,6 +88,10 @@ public abstract class UI_Base : MonoBehaviour
                 evt.OnDragEndHandler -= action;
                 evt.OnDragEndHandler += action;
                 break;
+            case Define.UIEvent.Up:
+                evt.OnUpHandler -= action;
+                evt.OnUpHandler += action;
+                break;
         }
     }
 
@@ -107,7 +111,7 @@ public abstract class UI_Base : MonoBehaviour
     }
     public void SetResolution()
     {
-        float setWidth = 3020; // 사용자 설정 너비
+        float setWidth = 3200; // 사용자 설정 너비
         float setHeight = 1440; // 사용자 설정 높이
         
         float deviceWidth = Screen.width; // 기기 너비 저장

@@ -1,3 +1,6 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Util
@@ -128,4 +131,35 @@ public class Util
 
         return target;
     }
+
+    
+    public static IEnumerator SmoothMove(Transform transform, Vector3 start, Vector3 end, float moveTime = 1.0f)
+    {
+
+        float startTime = Time.time;
+        float endTime = startTime + moveTime;
+        while (Time.time < endTime)
+        {
+            float t = (Time.time - startTime) / moveTime;
+            transform.position = Vector3.Lerp(start, end, t);
+            yield return null;
+        }
+
+        transform.position = end;
+    }
+    public static IEnumerator SmoothMoveUI(RectTransform transform, Vector3 start, Vector3 end, float moveTime = 1.0f)
+    {
+
+        float startTime = Time.time;
+        float endTime = startTime + moveTime;
+        while (Time.time < endTime)
+        {
+            float t = (Time.time - startTime) / moveTime;
+            transform.position = Vector3.Lerp(start, end, t);
+            yield return null;
+        }
+
+        transform.position = end;
+    }
+
 }

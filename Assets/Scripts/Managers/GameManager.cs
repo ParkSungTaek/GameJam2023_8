@@ -25,6 +25,11 @@ public class GameManager : MonoBehaviour
     public static UIManager UI { get { return Instance._uiManager; } }
     #endregion
 
+    private void Awake()
+    {
+        Init();
+    }
+
     #region Initiator
     /// <summary> instance 생성, 산하 매니저들 초기화 </summary>
     static void Init()
@@ -43,6 +48,7 @@ public class GameManager : MonoBehaviour
             DontDestroyOnLoad(gm);
             _instance._resourceManager.Init();
             _instance._soundManager.Init();
+
             _instance._inGameDataManager.Init();
         }
 

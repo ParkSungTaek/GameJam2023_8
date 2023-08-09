@@ -11,10 +11,9 @@ public class SyncController : MonoBehaviour
     SyncController() { }
     #endregion Singleton
 
-
     #region Data
-    public const float SyncTime = 3f;
-
+    public const float SyncTime = 10.909f;
+    bool nowPlaying = false;
     #endregion Data
 
     #region Initiator
@@ -35,28 +34,89 @@ public class SyncController : MonoBehaviour
     #endregion Initiator
 
     #region SyncSystem
-    public static Action JobCollector_Start { get; set; }
-    public static Action JobCollector_End { get; set; }
+
+    public static Action JobCollector_Start_A { get; set; }
+    public static Action JobCollector_End_A { get; set; }
+    public static Action JobCollector_Start_B { get; set; }
+    public static Action JobCollector_End_B { get; set; }
+
+    public static Action JobCollector_Start_Player0_A { get; set; }
+    public static Action JobCollector_End_Player0_A { get; set; }
+    public static Action JobCollector_Start_Player0_B { get; set; }
+    public static Action JobCollector_End_Player0_B { get; set; }
+
+    public static Action JobCollector_Start_Player1_A { get; set; }
+    public static Action JobCollector_End_Player1_A { get; set; }
+    public static Action JobCollector_Start_Player1_B { get; set; }
+    public static Action JobCollector_End_Player1_B { get; set; }
+
+    public static Action JobCollector_Start_Player2_A { get; set; }
+    public static Action JobCollector_End_Player2_A { get; set; }
+    public static Action JobCollector_Start_Player2_B { get; set; }
+    public static Action JobCollector_End_Player2_B { get; set; }
+
+
+    public static Action JobCollector_Start_Player3_A { get; set; }
+    public static Action JobCollector_End_Player3_A { get; set; }
+    public static Action JobCollector_Start_Player3_B { get; set; }
+    public static Action JobCollector_End_Player3_B { get; set; }
+
 
     Coroutine coroutine;
     
     public static void Flush()
     {
-        sync.coroutine = sync.StartCoroutine(SyncSystem());
+        if (!sync.nowPlaying)
+        {
+            sync.nowPlaying = true;
+            sync.coroutine = sync.StartCoroutine(SyncSystem());
+
+        }
     }
     public static void EndFlush()
     {
-        sync.StopCoroutine(sync.coroutine);
+        if (sync.nowPlaying)
+        {
+            sync.nowPlaying =false;
+            sync.StopCoroutine(sync.coroutine);
+
+        }
     }
 
     WaitForSeconds seconds = new WaitForSeconds(SyncTime);
     static IEnumerator SyncSystem()
     {
+        yield return new WaitForSeconds(0.2f);
         while (true)
         {
-            JobCollector_Start?.Invoke();
+            
+            JobCollector_Start_A?.Invoke();
+            JobCollector_Start_Player0_A?.Invoke();
+            JobCollector_Start_Player1_A?.Invoke();
+            JobCollector_Start_Player2_A?.Invoke();
+            JobCollector_Start_Player3_A?.Invoke();
+
             yield return sync.seconds;
-            JobCollector_End?.Invoke();
+            JobCollector_End_A?.Invoke();
+            JobCollector_End_Player0_A?.Invoke();
+            JobCollector_End_Player1_A?.Invoke();
+            JobCollector_End_Player2_A?.Invoke();
+            JobCollector_End_Player3_A?.Invoke();
+
+
+            JobCollector_Start_B?.Invoke();
+            JobCollector_Start_Player0_B?.Invoke();
+            JobCollector_Start_Player1_B?.Invoke();
+            JobCollector_Start_Player2_B?.Invoke();
+            JobCollector_Start_Player3_B?.Invoke();
+
+            yield return sync.seconds;
+            JobCollector_End_B?.Invoke();
+            JobCollector_End_Player0_B?.Invoke();
+            JobCollector_End_Player1_B?.Invoke();
+            JobCollector_End_Player2_B?.Invoke();
+            JobCollector_End_Player3_B?.Invoke();
+
         }
 
     }

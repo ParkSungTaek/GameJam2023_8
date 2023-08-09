@@ -5,12 +5,14 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 /// <summary> 매개변수 없는 이벤트 핸들러 </summary>
-public class UI_EventHandler : MonoBehaviour, IPointerClickHandler, IDragHandler, IEndDragHandler,IPointerDownHandler
+public class UI_EventHandler : MonoBehaviour, IPointerClickHandler, IDragHandler, IEndDragHandler,IPointerDownHandler,IPointerUpHandler
 {
     public Action<PointerEventData> OnDownHandler = null;
     public Action<PointerEventData> OnClickHandler = null;
     public Action<PointerEventData> OnDragHandler = null;
     public Action<PointerEventData> OnDragEndHandler = null;
+    public Action<PointerEventData> OnUpHandler = null;
+
 
     public void OnPointerDown(PointerEventData eventData)
     {
@@ -31,5 +33,9 @@ public class UI_EventHandler : MonoBehaviour, IPointerClickHandler, IDragHandler
     {
         OnDragEndHandler?.Invoke(eventData);
     }
-    
+
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        OnUpHandler?.Invoke(eventData);
+    }
 }
