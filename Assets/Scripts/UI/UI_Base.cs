@@ -92,6 +92,14 @@ public abstract class UI_Base : MonoBehaviour
                 evt.OnUpHandler -= action;
                 evt.OnUpHandler += action;
                 break;
+            case Define.UIEvent.Exit:
+                evt.OnExitHandler -= action;
+                evt.OnExitHandler += action;
+                break;
+            case Define.UIEvent.Deselect:
+                evt.OnDeselectHandler -= action as Action<BaseEventData>;
+                evt.OnDeselectHandler += action as Action<BaseEventData>;
+                break;
         }
     }
 

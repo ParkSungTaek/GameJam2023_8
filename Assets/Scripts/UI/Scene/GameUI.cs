@@ -7,12 +7,30 @@ using System;
 using static Define;
 using System.Reflection;
 
+
 public class GameUI : UI_Scene
 {
     static GameUI _instance;
-        
     public static GameUI Instance { get { return _instance; } }
     GameUI() { }
+
+    #region Data
+    const int TYPENUM = InGameDataManager.TYPENUM;
+    string _clickButtonName { get; set; }
+    float[] time { get; set; } = new float[TYPENUM];
+    bool[] Click { get; set; } = { false, false, false, false };
+    //int _clickIndex;
+    Buttons[] buttonsDown { get; set; } = new Buttons[TYPENUM];
+    Buttons[] buttons = new Buttons[TYPENUM];
+    bool[] _isPlaying = new bool[TYPENUM];
+    public bool[] IsPlaying { get { return _isPlaying; } }
+    const float deltaTime = 0.5f;
+    bool[] _isWaiting = new bool[TYPENUM];
+    float[] _isWaitingTime = new float[TYPENUM];
+    GameObject[] SliderBackground { get; set; } = new GameObject[TYPENUM];
+
+    #endregion Data
+
 
 
     enum GameObjects
@@ -55,17 +73,22 @@ public class GameUI : UI_Scene
     enum Texts
     {
     }
+    enum Sliders
+    {
+        Slider0, 
+        Slider1, 
+        Slider2, 
+        Slider3,
+        Slider,
+    }
+
     bool[] _activeButtons = new bool[Enum.GetValues(typeof(Buttons)).Length];
 
     public void SetRoadColor(Color color)
     {
         Get<GameObject>((int)GameObjects.Road).GetComponent<Image>().color = color;
     }
-    Buttons button;
-    Buttons[] buttons = new Buttons[4];
-    bool[] playToggles = new bool[4];
-    public bool[] PlayToggles { get { return playToggles; } }
-    const float deltaTime = 0.5f;
+    
 
     private void Awake()
     {
@@ -78,6 +101,7 @@ public class GameUI : UI_Scene
         Bind<GameObject>(typeof(GameObjects));
         Bind<Button>(typeof(Buttons));
         Bind<TMP_Text>(typeof(Texts));
+        Bind<Slider>(typeof(Sliders));
 
         ButtonBind();
 
@@ -85,18 +109,48 @@ public class GameUI : UI_Scene
         {
             _activeButtons[i] = false;
         }
-        for(int i = 0; i < 4; i++)
+        for(int i = 0; i < TYPENUM; i++)
         {
             buttons[i] = Buttons.None;
-            playToggles[i] = true;
+            _isPlaying[i] = true;
+        }
+        for (int i = 0; i < TYPENUM; i++)
+        {
+            Get<Slider>(i).value = 0;
+            _isWaiting[i] = false;
+            SliderBackground[i] = Get<Slider>(i).transform.Find("Background").gameObject;
+            SliderBackground[i].SetActive(false);
+
         }
 
 
+        SyncController.JobCollector_Start_A += () => { Get<Slider>((int)Sliders.Slider).value = 0; };
+        SyncController.JobCollector_Start_B += () => { Get<Slider>((int)Sliders.Slider).value = 1; };
+
+        //SyncController.JobCollector_End_A = null;
+        //SyncController.JobCollector_End_B = null;
+        SyncController.JobCollector_Start_A += () => {
+            for (int i = (int)Sliders.Slider0; i <= (int)Sliders.Slider3; i++)
+            {
+                _isWaiting[i] = false;
+                SliderBackground[i].SetActive(false);
+                Get<Slider>(i).value = 0;
+            }
+
+        };
+        SyncController.JobCollector_Start_B += () => {
+            for (int i = (int)Sliders.Slider0; i <= (int)Sliders.Slider3; i++)
+            {
+                _isWaiting[i] = false;
+                SliderBackground[i].SetActive(false);
+                Get<Slider>(i).value = 0;
+            }
+        };
+
     }
 
-    GameObject UiDragImage;
 
-    
+
     #region Buttons
     void ButtonBind()
     {
@@ -119,15 +173,25 @@ public class GameUI : UI_Scene
         BindEvent(GetButton((int)Buttons.RemoteButton2).gameObject, RemoteButtonUp, Define.UIEvent.Up);
         BindEvent(GetButton((int)Buttons.RemoteButton3).gameObject, RemoteButtonUp, Define.UIEvent.Up);
 
+        BindEvent(GetButton((int)Buttons.RemoteButton0).gameObject, RemoteButtonUp, Define.UIEvent.Exit);
+        BindEvent(GetButton((int)Buttons.RemoteButton1).gameObject, RemoteButtonUp, Define.UIEvent.Exit);
+        BindEvent(GetButton((int)Buttons.RemoteButton2).gameObject, RemoteButtonUp, Define.UIEvent.Exit);
+        BindEvent(GetButton((int)Buttons.RemoteButton3).gameObject, RemoteButtonUp, Define.UIEvent.Exit);
+
 
     }
+    /// <summary>
+    /// 중앙 Play or Pause 버튼 GameUI가 통제하는것이 합리적
+    /// </summary>
+    /// <param name="evt"></param>
+
     void PlayPause(PointerEventData evt)
     {
         if(Time.timeScale == 0f)
         {
             Time.timeScale = 1f;
             GetButton((int)Buttons.PlayPause).GetComponent<Image>().sprite = GameManager.Resource.Load<Sprite>("Sprites/UI/midBtn_pause");
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < TYPENUM; i++)
             {
                 GameManager.Sound.AudioSources[i].UnPause();
             }
@@ -138,7 +202,7 @@ public class GameUI : UI_Scene
             Time.timeScale = 0f;
             GetButton((int)Buttons.PlayPause).GetComponent<Image>().sprite = GameManager.Resource.Load<Sprite>("Sprites/UI/midBtn_play");
             
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < TYPENUM; i++)
             {
                 GameManager.Sound.AudioSources[i].Pause();
             }
@@ -153,106 +217,170 @@ public class GameUI : UI_Scene
     /*
     
     */
-    string _clickButtonName;
-    float time;
-    bool Click = false;
-    int _clickIndex;
+    
+    /// <summary>
+    /// 음악 버튼 눌렀을때 처리
+    /// </summary>
+    /// <param name="evt"></param>
     void Down(PointerEventData evt)
     {
-        Click = true;
+        
         _clickButtonName = evt.pointerCurrentRaycast.gameObject.name;
+
+        Buttons button;
+        int _clickIndex;
         if (System.Enum.TryParse(_clickButtonName, out button))
         {
+            
             _clickIndex = ((int)button)/6;
+            buttonsDown[_clickIndex] = button;
+            ButtonAction(_clickButtonName);
+
         }
-        time = Time.time;
-        //Down(tmp);
+
+
     }
     void Up(PointerEventData evt)
     {
-        Click = false;
-        // 짧게 클릭
-        if (time + deltaTime > Time.time)
+        /*
+
+        _clickButtonName = evt.pointerCurrentRaycast.gameObject.name;
+
+        Buttons button;
+        int _clickIndex;
+        if (System.Enum.TryParse(_clickButtonName, out button))
         {
-            Down(_clickButtonName);
+            _clickIndex = ((int)button) / 6;
+
+            //Click[_clickIndex] = false;
+            // 짧게 클릭
+            ButtonAction(_clickButtonName);
+
+            //if (time[_clickIndex] + deltaTime > Time.time)
+            //{
+            //    ButtonAction(_clickButtonName);
+            //}
+            ////버튼 길게 클릭 후 떼는 시점
+            //else
+            //{
+            //    for (int i = 0; i < TYPENUM; i++)
+            //    {
+            //        if (IsPlaying[i])
+            //        {
+            //            GameManager.Sound.SetVolume((Define.Sound)i, GameManager.Sound.Volume);
+            //        }
+            //    }
+            //}
         }
-        else
-        {
-            for (int i = 0; i < 4; i++)
-            {
-                if (PlayToggles[i])
-                {
-                    GameManager.Sound.SetVolume((Define.Sound)i, GameManager.Sound.Volume);
-                }
-            }
-        }
+        */
+
+        
     }
 
     void RemoteButtonDown(PointerEventData evt)
     {
         
         _clickButtonName = evt.pointerCurrentRaycast.gameObject.name;
-
+        Buttons button;
+        int _clickIndex;
         if (System.Enum.TryParse(_clickButtonName, out button))
         {
-            //_clickIndex = ((int)button) / 6;
             _clickIndex = button - Buttons.RemoteButton0;
+            if (buttons[_clickIndex] == Buttons.None)
+            {
+                return;
+            }
+            _clickButtonName = Enum.GetName(typeof(Buttons), buttons[_clickIndex]);
+            
+            Click[_clickIndex] = true;
+
+            time[_clickIndex] = Time.time;
+            //Down(tmp);
         }
 
-        _clickButtonName = Enum.GetName(typeof(Buttons), buttons[_clickIndex]);
-        if(buttons[_clickIndex] == Buttons.None)
-        {
-            return;
-        }
-        Click = true;
 
-        time = Time.time;
-        //Down(tmp);
     }
     void RemoteButtonUp(PointerEventData evt)
     {
-        if (buttons[_clickIndex] == Buttons.None)
+        _clickButtonName = evt.pointerEnter.gameObject.name;
+        Buttons button;
+        int _clickIndex;
+        if (System.Enum.TryParse(_clickButtonName, out button))
         {
-            return;
-        }
-        Click = false;
-        // 짧게 클릭
-        if (time + deltaTime > Time.time)
-        {
-            Down(_clickButtonName);
-        }
-        else
-        {
-            for (int i = 0; i < 4; i++)
+            
+            _clickIndex = button - Buttons.RemoteButton0;
+            if (Click[_clickIndex])
             {
-                if (PlayToggles[i])
+                if (buttons[_clickIndex] == Buttons.None)
                 {
-                    GameManager.Sound.SetVolume((Define.Sound)i, GameManager.Sound.Volume);
+                    return;
+                }
+
+                Click[_clickIndex] = false;
+
+                _clickButtonName = Enum.GetName(typeof(Buttons), buttons[_clickIndex]);
+                // 짧게 클릭
+                if (time[_clickIndex] + deltaTime > Time.time)
+                {
+                    ButtonAction(_clickButtonName);
+                }
+                else
+                {
+                    for (int i = 0; i < TYPENUM; i++)
+                    {
+                        if (IsPlaying[i])
+                        {
+                            GameManager.Sound.SetVolume((Define.Sound)i, GameManager.Sound.Volume);
+                        }
+                    }
                 }
             }
         }
+
+        
     }
     private void Update()
     {
-        if(Click && time + deltaTime <Time.time)
+        bool isStillDown = false;
+        for(int _clickIndex = 0; _clickIndex < TYPENUM; _clickIndex++)
         {
-            for(int i = 0; i < 4; i++)
+            if (Click[_clickIndex] && time[_clickIndex] + deltaTime < Time.time)
             {
-                if(i != _clickIndex)
-                {
-                    GameManager.Sound.SetVolume((Define.Sound)i, 0);
-
-                }
+                isStillDown = true;
             }
         }
+        if(isStillDown) 
+        {
+            for (int _clickIndex = 0; _clickIndex < TYPENUM; _clickIndex++)
+            {
+                if (Click[_clickIndex] && time[_clickIndex] + deltaTime < Time.time)
+                {
+                    isStillDown = true;
+                }
+
+                GameManager.Sound.SetVolume((Define.Sound)_clickIndex, (Click[_clickIndex] && time[_clickIndex] + deltaTime < Time.time) ? GameManager.Sound.Volume : 0);
+            }
+        }
+        for (int _clickIndex = 0; _clickIndex < TYPENUM; _clickIndex++)
+        {
+            if (_isWaiting[_clickIndex])
+            {
+                Get<Slider>(_clickIndex).value += Time.deltaTime * (1 / _isWaitingTime[_clickIndex]);
+
+            }
+        }
+        
+
+
     }
-    public void Down(string buttonName,bool None = false, bool PreSet = false)
+    public void ButtonAction(string buttonName,bool None = false, bool PreSet = false)
     {
         string tmp = buttonName;
-
+        Buttons button;
         if (System.Enum.TryParse(tmp, out button))
         {
             int index = (int)button;
+            buttonsDown[index/6] = button;
             int beforePlaylist = (int)buttons[index / 6];
 
             if (!None )
@@ -262,12 +390,17 @@ public class GameUI : UI_Scene
                 {
                     ResetType(index / 6);
                     buttons[index / 6] = button;
-                    playToggles[index / 6] = true;
+                    _isPlaying[index / 6] = true;
                     GameManager.Sound.SetVolume((Sound)(index / 6), GameManager.Sound.Volume);
 
                     Color color = GetButton(index).GetComponent<Image>().color;
                     color.a = 0.5f;
                     GetButton(index).GetComponent<Image>().color = color;
+
+                    _isWaiting[index / 6] = true;
+                    _isWaitingTime[index / 6] = SyncController.NextTick-Time.time;
+                    SliderBackground[index / 6].SetActive(true);
+
                 }
                 // 같은 음악 토글할 때
                 else
@@ -276,7 +409,7 @@ public class GameUI : UI_Scene
                     {
                         ResetType(index / 6);
                         buttons[index / 6] = button;
-                        playToggles[index / 6] = true;
+                        _isPlaying[index / 6] = true;
                         GameManager.Sound.SetVolume((Sound)(index / 6), GameManager.Sound.Volume);
 
                         Color color = GetButton(index).GetComponent<Image>().color;
@@ -286,9 +419,9 @@ public class GameUI : UI_Scene
                     }
                     else
                     {
-                        if (playToggles[index / 6])
+                        if (_isPlaying[index / 6])
                         {
-                            playToggles[index / 6] = false;
+                            _isPlaying[index / 6] = false;
                             GameManager.Sound.SetVolume((Sound)(index / 6), 0);
                             Color color = GetButton(index).GetComponent<Image>().color;
                             color.a = 1f;
@@ -296,7 +429,7 @@ public class GameUI : UI_Scene
                         }
                         else
                         {
-                            playToggles[index / 6] = true;
+                            _isPlaying[index / 6] = true;
                             GameManager.Sound.SetVolume((Sound)(index / 6), GameManager.Sound.Volume);
                             Color color = GetButton(index).GetComponent<Image>().color;
                             color.a = 0.5f;
@@ -316,7 +449,9 @@ public class GameUI : UI_Scene
             }
 
 
-            TMP_SliderTest.Init();
+            TimeSlider.Init();
+
+            
 
             if (index >= 0 && index < 6)
             {
@@ -375,7 +510,7 @@ public class GameUI : UI_Scene
         switch (type)
         {
             case 0:
-                playToggles[0] = true;
+                _isPlaying[0] = true;
                 buttons[0] = Buttons.None;
                 SyncController.JobCollector_Start_Player0_A = null;
                 SyncController.JobCollector_Start_Player0_B = null;
@@ -389,7 +524,7 @@ public class GameUI : UI_Scene
 
                 break;
             case 1:
-                playToggles[1] = true;
+                _isPlaying[1] = true;
                 buttons[1] = Buttons.None;
                 SyncController.JobCollector_Start_Player1_A = null;
                 SyncController.JobCollector_Start_Player1_B = null;
@@ -403,7 +538,7 @@ public class GameUI : UI_Scene
                 }
                 break;
             case 2:
-                playToggles[2] = true;
+                _isPlaying[2] = true;
                 buttons[2] = Buttons.None;
                 SyncController.JobCollector_Start_Player2_A = null;
                 SyncController.JobCollector_Start_Player2_B = null;
@@ -417,7 +552,7 @@ public class GameUI : UI_Scene
                 }
                 break;
             case 3:
-                playToggles[3] = true;
+                _isPlaying[3] = true;
                 buttons[3] = Buttons.None;
                 SyncController.JobCollector_Start_Player3_A = null;
                 SyncController.JobCollector_Start_Player3_B = null;

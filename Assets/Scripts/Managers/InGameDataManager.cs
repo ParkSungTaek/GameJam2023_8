@@ -8,6 +8,7 @@ using static Define;
 public class InGameDataManager
 {
     #region 현재 플레이중인 음악 
+    public const int TYPENUM = 4;
     public Define.SoundtrackType0 SoundtrackType0 { get; set; }
     public Define.SoundtrackType1 SoundtrackType1 { get; set; }
     public Define.SoundtrackType2 SoundtrackType2 { get; set; }
@@ -59,7 +60,7 @@ public class InGameDataManager
 
         for(int i = 0; i < PlayerNum; i++)
         {
-            SoundPlayer[i] = GameObject.Find($"Player{i}").GetComponent<PlayerController>();
+            SoundPlayer[i] = GameObject.Find($"Player{i}")?.GetComponent<PlayerController>();
             
         }
 

@@ -101,6 +101,8 @@ public class Define
         Drag,
         DragEnd,
         Up,
+        Exit,
+        Deselect,
     }
 
     public enum Scenes

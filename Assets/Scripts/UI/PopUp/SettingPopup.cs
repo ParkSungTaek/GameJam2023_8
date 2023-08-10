@@ -33,7 +33,6 @@ public class SettingPopup : UI_PopUp
         Get<GameObject>((int)UIs.SoundVolumeSlider).GetComponent<Slider>().value = GameManager.Sound.Volume;
         BindEvent(GetButton((int)Buttons.Arrow).gameObject, ClickArrow);
         StartUIPosition = Get<GameObject>((int)UIs.UI).transform.position;
-        Debug.Log($" X : {Get<GameObject>((int)UIs.BG).transform.position.x}   Y : {Get<GameObject>((int)UIs.UI).transform.position.y}  Z : {Get<GameObject>((int)UIs.UI).transform.position.z}");
         Get<GameObject>((int)UIs.BG).SetActive(false);
 
     }
@@ -44,7 +43,7 @@ public class SettingPopup : UI_PopUp
         for(int i = 0; i < 4; i++)
         {
             
-            if (GameUI.Instance.PlayToggles[i])
+            if (GameUI.Instance.IsPlaying[i])
             {
                 GameManager.Sound.SetVolume((Define.Sound)i, volume);
             }

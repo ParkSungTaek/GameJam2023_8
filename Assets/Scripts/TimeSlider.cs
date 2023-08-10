@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class TMP_SliderTest: MonoBehaviour
+public class TimeSlider: MonoBehaviour
 {
 
-    static TMP_SliderTest _instance; 
+    static TimeSlider _instance; 
 
-    public static TMP_SliderTest Instance { get { Init(); return _instance; }}
+    public static TimeSlider Instance { get { Init(); return _instance; }}
 
     bool start = false;
     Slider Slider;
@@ -17,7 +17,7 @@ public class TMP_SliderTest: MonoBehaviour
     // Start is called before the first frame update
     public static void Init()
     {
-        _instance = GameObject.Find("Slider").GetComponent<TMP_SliderTest>();
+        _instance = GameObject.Find("Slider").GetComponent<TimeSlider>();
         if (!_instance.start)
         {
             _instance.Slider = _instance.GetComponent<Slider>();

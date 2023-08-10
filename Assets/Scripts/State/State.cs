@@ -6,7 +6,7 @@ public abstract class State : MonoBehaviour
 {
     public virtual void StartPlayingAnim(PlayerController go, ButtonData buttonData = null) 
     {
-        TMP_SliderTest.Init();
+        TimeSlider.Init();
     }
     public virtual void EndPlayingAnim(PlayerController go) { }
 

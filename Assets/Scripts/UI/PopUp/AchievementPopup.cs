@@ -40,7 +40,6 @@ public class AchievementPopup : UI_PopUp
 
         ButtonBind();
         StartUIPosition = Get<GameObject>((int)UIs.UI).transform.position;
-        Debug.Log($" X : {Get<GameObject>((int)UIs.BG).transform.position.x}   Y : {Get<GameObject>((int)UIs.UI).transform.position.y}  Z : {Get<GameObject>((int)UIs.UI).transform.position.z}");
         Get<GameObject>((int)UIs.BG).SetActive(false);
     }
     bool active = false;
@@ -74,39 +73,39 @@ public class AchievementPopup : UI_PopUp
         InGameDataManager.Achievement achievement = GameManager.InGameData.Achievements[(int)button];
         if (achievement.Track0 != "None")
         {
-            GameUI.Instance.Down(achievement.Track0, false, true);
+            GameUI.Instance.ButtonAction(achievement.Track0, false, true);
         }
         else
         {
-            GameUI.Instance.Down("Button0",true);
+            GameUI.Instance.ButtonAction("Button0",true);
         }
 
         if (achievement.Track1 != "None")
         {
-            GameUI.Instance.Down(achievement.Track1, false, true);
+            GameUI.Instance.ButtonAction(achievement.Track1, false, true);
         }
         else
         {
-            GameUI.Instance.Down("Button6", true);
+            GameUI.Instance.ButtonAction("Button6", true);
 
         }
 
         if (achievement.Track2 != "None")
         {
-            GameUI.Instance.Down(achievement.Track2, false, true);
+            GameUI.Instance.ButtonAction(achievement.Track2, false, true);
         }
         else
         {
-            GameUI.Instance.Down("Button12", true);
+            GameUI.Instance.ButtonAction("Button12", true);
 
         }
         if (achievement.Track3 != "None")
         {
-            GameUI.Instance.Down(achievement.Track3, false, true);
+            GameUI.Instance.ButtonAction(achievement.Track3, false, true);
         }
         else
         {
-            GameUI.Instance.Down("Button18", true);
+            GameUI.Instance.ButtonAction("Button18", true);
 
         }
 

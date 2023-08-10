@@ -14,6 +14,9 @@ public class SyncController : MonoBehaviour
     #region Data
     public const float SyncTime = 10.909f;
     bool nowPlaying = false;
+    public static bool APart { get; set; } = true;
+
+    public static float NextTick { get; private set; }
     #endregion Data
 
     #region Initiator
@@ -89,33 +92,40 @@ public class SyncController : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
         while (true)
         {
-            
-            JobCollector_Start_A?.Invoke();
-            JobCollector_Start_Player0_A?.Invoke();
-            JobCollector_Start_Player1_A?.Invoke();
-            JobCollector_Start_Player2_A?.Invoke();
-            JobCollector_Start_Player3_A?.Invoke();
+            if (APart)
+            {
 
-            yield return sync.seconds;
-            JobCollector_End_A?.Invoke();
-            JobCollector_End_Player0_A?.Invoke();
-            JobCollector_End_Player1_A?.Invoke();
-            JobCollector_End_Player2_A?.Invoke();
-            JobCollector_End_Player3_A?.Invoke();
+                JobCollector_Start_Player0_A?.Invoke();
+                JobCollector_Start_Player1_A?.Invoke();
+                JobCollector_Start_Player2_A?.Invoke();
+                JobCollector_Start_Player3_A?.Invoke();
+                JobCollector_Start_A?.Invoke();
+                NextTick = Time.time + SyncTime;
+                yield return sync.seconds;
+                JobCollector_End_Player0_A?.Invoke();
+                JobCollector_End_Player1_A?.Invoke();
+                JobCollector_End_Player2_A?.Invoke();
+                JobCollector_End_Player3_A?.Invoke();
+                JobCollector_End_A?.Invoke();
+                APart = false;
 
-
-            JobCollector_Start_B?.Invoke();
-            JobCollector_Start_Player0_B?.Invoke();
-            JobCollector_Start_Player1_B?.Invoke();
-            JobCollector_Start_Player2_B?.Invoke();
-            JobCollector_Start_Player3_B?.Invoke();
-
-            yield return sync.seconds;
-            JobCollector_End_B?.Invoke();
-            JobCollector_End_Player0_B?.Invoke();
-            JobCollector_End_Player1_B?.Invoke();
-            JobCollector_End_Player2_B?.Invoke();
-            JobCollector_End_Player3_B?.Invoke();
+            }
+            if (!APart)
+            {
+                JobCollector_Start_B?.Invoke();
+                JobCollector_Start_Player0_B?.Invoke();
+                JobCollector_Start_Player1_B?.Invoke();
+                JobCollector_Start_Player2_B?.Invoke();
+                JobCollector_Start_Player3_B?.Invoke();
+                NextTick = Time.time + SyncTime;
+                yield return sync.seconds;
+                JobCollector_End_B?.Invoke();
+                JobCollector_End_Player0_B?.Invoke();
+                JobCollector_End_Player1_B?.Invoke();
+                JobCollector_End_Player2_B?.Invoke();
+                JobCollector_End_Player3_B?.Invoke();
+                APart = true;
+            }
 
         }
 
