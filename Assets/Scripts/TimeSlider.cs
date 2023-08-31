@@ -17,17 +17,20 @@ public class TimeSlider: MonoBehaviour
     // Start is called before the first frame update
     public static void Init()
     {
-        _instance = GameObject.Find("Slider").GetComponent<TimeSlider>();
-        if (!_instance.start)
+        if (_instance == null)
         {
-            _instance.Slider = _instance.GetComponent<Slider>();
-            SyncController.Flush();
-            _instance.start = true;
-            //SyncController.JobCollector_Start += StartSlider;
-            SyncController.JobCollector_End_A += _instance.ResetSliderA;
-            SyncController.JobCollector_End_B += _instance.ResetSliderB;
+            _instance = GameObject.Find("Slider").GetComponent<TimeSlider>();
+            if (!_instance.start)
+            {
+                _instance.Slider = _instance.GetComponent<Slider>();
+                SyncController.Flush();
+                _instance.start = true;
+                //SyncController.JobCollector_Start += StartSlider;
+                SyncController.JobCollector_Start_A += _instance.ResetSliderA;
+                SyncController.JobCollector_Start_B += _instance.ResetSliderB;
 
 
+            }
         }
 
 
@@ -50,11 +53,11 @@ public class TimeSlider: MonoBehaviour
     
     void ResetSliderA()
     {
-        A = false;
+        A = true;
     }
     void ResetSliderB()
     {
-        A = true;
+        A = false;
     }
     // Update is called once per frame
     void Update()

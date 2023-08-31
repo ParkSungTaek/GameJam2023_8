@@ -30,7 +30,7 @@ public class GameUI : UI_Scene
     GameObject[] SliderBackground { get; set; } = new GameObject[TYPENUM];
 
     #endregion Data
-
+    SoundPlayerController soundPlayerController;
 
 
     enum GameObjects
@@ -93,10 +93,12 @@ public class GameUI : UI_Scene
     private void Awake()
     {
         Init();
+        
     }
     public override void Init()
     {
         base.Init();
+        soundPlayerController = GameObject.FindObjectOfType<SoundPlayerController>();
         _instance = this;
         Bind<GameObject>(typeof(GameObjects));
         Bind<Button>(typeof(Buttons));
@@ -127,9 +129,7 @@ public class GameUI : UI_Scene
         SyncController.JobCollector_Start_A += () => { Get<Slider>((int)Sliders.Slider).value = 0; };
         SyncController.JobCollector_Start_B += () => { Get<Slider>((int)Sliders.Slider).value = 1; };
 
-        //SyncController.JobCollector_End_A = null;
-        //SyncController.JobCollector_End_B = null;
-        SyncController.JobCollector_Start_A += () => {
+        SyncController.JobCollector_End_A += () => {
             for (int i = (int)Sliders.Slider0; i <= (int)Sliders.Slider3; i++)
             {
                 _isWaiting[i] = false;
@@ -138,7 +138,7 @@ public class GameUI : UI_Scene
             }
 
         };
-        SyncController.JobCollector_Start_B += () => {
+        SyncController.JobCollector_End_B += () => {
             for (int i = (int)Sliders.Slider0; i <= (int)Sliders.Slider3; i++)
             {
                 _isWaiting[i] = false;
@@ -157,7 +157,7 @@ public class GameUI : UI_Scene
         for(int i = 0; i < 24; i++)
         {
             BindEvent(GetButton(i).gameObject, Down, Define.UIEvent.Down);
-            BindEvent(GetButton(i).gameObject, Up, Define.UIEvent.Up);
+            //BindEvent(GetButton(i).gameObject, Up, Define.UIEvent.Up);
 
         }
         
@@ -181,10 +181,9 @@ public class GameUI : UI_Scene
 
     }
     /// <summary>
-    /// 중앙 Play or Pause 버튼 GameUI가 통제하는것이 합리적
+    /// 중앙 Play or Pause 버튼 
     /// </summary>
     /// <param name="evt"></param>
-
     void PlayPause(PointerEventData evt)
     {
         if(Time.timeScale == 0f)
@@ -210,13 +209,7 @@ public class GameUI : UI_Scene
         }
     }
 
-    /// <summary>
-    /// SoundPlayer[0]에서 Play
-    /// </summary>
-    /// <param name="evt"></param>
-    /*
     
-    */
     
     /// <summary>
     /// 음악 버튼 눌렀을때 처리
@@ -379,6 +372,8 @@ public class GameUI : UI_Scene
         Buttons button;
         if (System.Enum.TryParse(tmp, out button))
         {
+
+            TimeSlider.Init();
             int index = (int)button;
             buttonsDown[index/6] = button;
             int beforePlaylist = (int)buttons[index / 6];
@@ -397,9 +392,13 @@ public class GameUI : UI_Scene
                     color.a = 0.5f;
                     GetButton(index).GetComponent<Image>().color = color;
 
-                    _isWaiting[index / 6] = true;
-                    _isWaitingTime[index / 6] = SyncController.NextTick-Time.time;
-                    SliderBackground[index / 6].SetActive(true);
+                    if(SliderBackground[index / 6].gameObject.activeSelf == false)
+                    {
+                        _isWaiting[index / 6] = true;
+                        _isWaitingTime[index / 6] = SyncController.NextTick - Time.time;
+                        SliderBackground[index / 6].SetActive(true);
+
+                    }
 
                 }
                 // 같은 음악 토글할 때
@@ -449,7 +448,6 @@ public class GameUI : UI_Scene
             }
 
 
-            TimeSlider.Init();
 
             
 
@@ -593,8 +591,6 @@ public class GameUI : UI_Scene
             GameManager.InGameData.SoundPlayer[0].StartPlayingAnim();
         }
     }
-
-
 
     void Play1_A()
     {

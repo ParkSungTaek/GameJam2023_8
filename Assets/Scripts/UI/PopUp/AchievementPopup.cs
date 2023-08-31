@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-//using UnityEngine.UIElements;
 
 public class AchievementPopup : UI_PopUp
 {
@@ -56,28 +55,17 @@ public class AchievementPopup : UI_PopUp
 
     }
 
-    void Achievement(PointerEventData evt) 
+
+    public static void AchievementPlay(int idx)
     {
-        string tmp = evt.pointerCurrentRaycast.gameObject.name;
-        Buttons button;
-        if (System.Enum.TryParse(tmp, out button))
-        {
-            int index = (int)button;
-        }
-        else
-        {
-            Debug.Log("변환 실패: " + tmp);
-        }
-
-
-        InGameDataManager.Achievement achievement = GameManager.InGameData.Achievements[(int)button];
+        InGameDataManager.Achievement achievement = GameManager.InGameData.Achievements[idx];
         if (achievement.Track0 != "None")
         {
             GameUI.Instance.ButtonAction(achievement.Track0, false, true);
         }
         else
         {
-            GameUI.Instance.ButtonAction("Button0",true);
+            GameUI.Instance.ButtonAction("Button0", true);
         }
 
         if (achievement.Track1 != "None")
@@ -106,10 +94,26 @@ public class AchievementPopup : UI_PopUp
         else
         {
             GameUI.Instance.ButtonAction("Button18", true);
-
+        }
+    }
+    void Achievement(PointerEventData evt) 
+    {
+        string tmp = evt.pointerCurrentRaycast.gameObject.name;
+        Buttons button;
+        if (System.Enum.TryParse(tmp, out button))
+        {
+            AchievementPlay((int)button);
+        }
+        else
+        {
+            Debug.Log("변환 실패: " + tmp);
         }
 
+        
+        
     }
+
+
     Coroutine Coroutine;
     void ClickArrow(PointerEventData evt)
     {

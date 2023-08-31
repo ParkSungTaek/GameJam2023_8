@@ -44,26 +44,18 @@ public class SyncController : MonoBehaviour
     public static Action JobCollector_End_B { get; set; }
 
     public static Action JobCollector_Start_Player0_A { get; set; }
-    public static Action JobCollector_End_Player0_A { get; set; }
     public static Action JobCollector_Start_Player0_B { get; set; }
-    public static Action JobCollector_End_Player0_B { get; set; }
-
+    
     public static Action JobCollector_Start_Player1_A { get; set; }
-    public static Action JobCollector_End_Player1_A { get; set; }
     public static Action JobCollector_Start_Player1_B { get; set; }
-    public static Action JobCollector_End_Player1_B { get; set; }
-
+    
     public static Action JobCollector_Start_Player2_A { get; set; }
-    public static Action JobCollector_End_Player2_A { get; set; }
     public static Action JobCollector_Start_Player2_B { get; set; }
-    public static Action JobCollector_End_Player2_B { get; set; }
-
+    
 
     public static Action JobCollector_Start_Player3_A { get; set; }
-    public static Action JobCollector_End_Player3_A { get; set; }
     public static Action JobCollector_Start_Player3_B { get; set; }
-    public static Action JobCollector_End_Player3_B { get; set; }
-
+    
 
     Coroutine coroutine;
     
@@ -94,19 +86,17 @@ public class SyncController : MonoBehaviour
         {
             if (APart)
             {
-
+                JobCollector_Start_A?.Invoke();
                 JobCollector_Start_Player0_A?.Invoke();
                 JobCollector_Start_Player1_A?.Invoke();
                 JobCollector_Start_Player2_A?.Invoke();
                 JobCollector_Start_Player3_A?.Invoke();
-                JobCollector_Start_A?.Invoke();
+                
                 NextTick = Time.time + SyncTime;
-                yield return sync.seconds;
-                JobCollector_End_Player0_A?.Invoke();
-                JobCollector_End_Player1_A?.Invoke();
-                JobCollector_End_Player2_A?.Invoke();
-                JobCollector_End_Player3_A?.Invoke();
                 JobCollector_End_A?.Invoke();
+
+                yield return sync.seconds;
+                
                 APart = false;
 
             }
@@ -118,12 +108,9 @@ public class SyncController : MonoBehaviour
                 JobCollector_Start_Player2_B?.Invoke();
                 JobCollector_Start_Player3_B?.Invoke();
                 NextTick = Time.time + SyncTime;
-                yield return sync.seconds;
                 JobCollector_End_B?.Invoke();
-                JobCollector_End_Player0_B?.Invoke();
-                JobCollector_End_Player1_B?.Invoke();
-                JobCollector_End_Player2_B?.Invoke();
-                JobCollector_End_Player3_B?.Invoke();
+
+                yield return sync.seconds;
                 APart = true;
             }
 

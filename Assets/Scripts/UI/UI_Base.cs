@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
-
+using System.Threading;
 
 public abstract class UI_Base : MonoBehaviour
 {
@@ -69,7 +69,7 @@ public abstract class UI_Base : MonoBehaviour
     public static void BindEvent(GameObject go, Action<PointerEventData> action, Define.UIEvent type = Define.UIEvent.Click)
     {
         UI_EventHandler evt = Util.GetOrAddComponent<UI_EventHandler>(go);
-
+        
         switch (type)
         {
             case Define.UIEvent.Down:

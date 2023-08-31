@@ -44,11 +44,9 @@ public class GameManager : MonoBehaviour
             }
             _instance = gm.GetComponent<GameManager>();
 
-            GameObject gg = Instantiate(gm);
             DontDestroyOnLoad(gm);
             _instance._resourceManager.Init();
             _instance._soundManager.Init();
-
             _instance._inGameDataManager.Init();
         }
 

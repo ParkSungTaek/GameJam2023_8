@@ -2,6 +2,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Security.Cryptography;
 using UnityEngine;
 using static Define;
 
@@ -20,6 +22,7 @@ public class InGameDataManager
     const int PlayerNum = 4;
     #endregion Player
 
+    public static bool IsAutoPlay { get; set; } = false;
 
     #region 업적 시스템
     /// <summary>
@@ -48,8 +51,20 @@ public class InGameDataManager
         new Achievement { Track0 = "Button2",  Track1 = "Button8",    Track2 = "Button12",    Track3 = "Button19" },
         new Achievement { Track0 = "Button3",  Track1 = "Button7",    Track2 = "Button14",    Track3 = "Button20" },
     };
-    
 
+    bool GetActiveAchievements(int idx)
+    {
+        return PlayerPrefs.GetInt($"GetActiveAchievements{idx}", 0) == 1;
+    }
+    void SetActiveAchievements(int idx,bool input)
+    {
+        if(input )
+            PlayerPrefs.SetInt($"GetActiveAchievements{idx}", 1);
+        else
+            PlayerPrefs.SetInt($"GetActiveAchievements{idx}", 0);
+        ActiveAchievementsIndex.Add(idx);
+    }
+    public List<int> ActiveAchievementsIndex { get; set; } = new List<int>();
     #endregion
 
 
@@ -89,11 +104,20 @@ public class InGameDataManager
         ButtonDatas[13].sprite = GameManager.Resource.Load<Sprite>("Sprites/Objects/sun_01");
         ButtonDatas[13].color = Color.white;
 
+        SetActiveAchievements(0, true);
+        SetActiveAchievements(1, true);
+        SetActiveAchievements(2, true);
 
-        
 
+        for (int i=0;i< Achievementnum; i++)
+        {
+            if (GetActiveAchievements(i))
+            {
+                ActiveAchievementsIndex.Add(i);
+            }
+        }
     }
-
+    
 
     /// <summary> 게임 플레이 정보 초기화 </summary>
     public void Clear()
