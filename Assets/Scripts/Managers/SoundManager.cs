@@ -68,7 +68,16 @@ public class SoundManager
         AudioClip audioClip = GetOrAddAudioClip(path, Define.Sound.SFX);
         Play(audioClip, Define.Sound.SFX, volume);
     }
-    
+
+    public void Play(int audioIdx, Define.SoundtrackType BGMSound, float volume = 1.0f)
+    {
+        Define.Sound player = (Define.Sound)audioIdx;
+
+        string path = $"{BGMSound}";
+        AudioClip audioClip = GetOrAddAudioClip(path, player);
+        Play(audioClip, player, volume);
+    }
+
     public void Play(Define.SoundtrackType0 BGMSound, float volume = 1.0f)
     {
         Define.Sound player;

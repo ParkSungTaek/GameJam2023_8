@@ -42,7 +42,7 @@ public class RecordController : MonoBehaviour
         public Action DoAction;
     }
 
-    public static void StartREC()
+    public static void StartREC(Define.RecordMethod recordMethod,int buttonName)
     {
         Instance.startREC();
     }

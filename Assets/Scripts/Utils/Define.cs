@@ -30,6 +30,10 @@ public class Define
         S0_2_b,
         S0_3_a,
         S0_3_b,
+        S0_4_a,
+        S0_4_b,
+        S0_5_a,
+        S0_5_b,
 
         S1_0_a,
         S1_0_b,
@@ -39,6 +43,10 @@ public class Define
         S1_2_b,
         S1_3_a,
         S1_3_b,
+        S1_4_a,
+        S1_4_b,
+        S1_5_a,
+        S1_5_b,
 
         S2_0_a,
         S2_0_b,
@@ -48,6 +56,10 @@ public class Define
         S2_2_b,
         S2_3_a,
         S2_3_b,
+        S2_4_a,
+        S2_4_b,
+        S2_5_a,
+        S2_5_b,
 
         S3_0_a,
         S3_0_b,
@@ -57,6 +69,10 @@ public class Define
         S3_2_b,
         S3_3_a,
         S3_3_b,
+        S3_4_a,
+        S3_4_b,
+        S3_5_a,
+        S3_5_b,
 
         MaxCount,
 
@@ -163,7 +179,9 @@ public class Define
 
     public enum RecordMethod
     {
-
+        Add,
+        Volume_Zero,
+        Volume_Re,
     }
 
 

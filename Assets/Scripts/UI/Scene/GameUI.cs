@@ -6,7 +6,8 @@ using System.Collections.Generic;
 using System;
 using static Define;
 using System.Reflection;
-
+using System.Collections;
+using UnityEditor.Presets;
 
 public class GameUI : UI_Scene
 {
@@ -45,24 +46,28 @@ public class GameUI : UI_Scene
         Button3,
         Button4,
         Button5,
+        
         Button6,
         Button7,
         Button8,
         Button9,
         Button10,
         Button11,
+
         Button12,
         Button13,
         Button14,
         Button15,
         Button16,
         Button17,
+
         Button18,
         Button19,
         Button20,
         Button21,
         Button22,
         Button23,
+
         None,
         PlayPause,
         RemoteButton0,
@@ -99,6 +104,7 @@ public class GameUI : UI_Scene
     {
         base.Init();
         soundPlayerController = GameObject.FindObjectOfType<SoundPlayerController>();
+        
         _instance = this;
         Bind<GameObject>(typeof(GameObjects));
         Bind<Button>(typeof(Buttons));
@@ -146,7 +152,6 @@ public class GameUI : UI_Scene
                 Get<Slider>(i).value = 0;
             }
         };
-
     }
 
 
@@ -224,51 +229,19 @@ public class GameUI : UI_Scene
         int _clickIndex;
         if (System.Enum.TryParse(_clickButtonName, out button))
         {
-            
+            ////soundPlayerController.Add((int)button);
+
             _clickIndex = ((int)button)/6;
             buttonsDown[_clickIndex] = button;
             ButtonAction(_clickButtonName);
+            ButtonActionReNew((int)button);
+
 
         }
 
 
     }
-    void Up(PointerEventData evt)
-    {
-        /*
-
-        _clickButtonName = evt.pointerCurrentRaycast.gameObject.name;
-
-        Buttons button;
-        int _clickIndex;
-        if (System.Enum.TryParse(_clickButtonName, out button))
-        {
-            _clickIndex = ((int)button) / 6;
-
-            //Click[_clickIndex] = false;
-            // 짧게 클릭
-            ButtonAction(_clickButtonName);
-
-            //if (time[_clickIndex] + deltaTime > Time.time)
-            //{
-            //    ButtonAction(_clickButtonName);
-            //}
-            ////버튼 길게 클릭 후 떼는 시점
-            //else
-            //{
-            //    for (int i = 0; i < TYPENUM; i++)
-            //    {
-            //        if (IsPlaying[i])
-            //        {
-            //            GameManager.Sound.SetVolume((Define.Sound)i, GameManager.Sound.Volume);
-            //        }
-            //    }
-            //}
-        }
-        */
-
-        
-    }
+    
 
     void RemoteButtonDown(PointerEventData evt)
     {
@@ -501,7 +474,110 @@ public class GameUI : UI_Scene
         }
 
     }
+    public void ButtonActionReNew(int buttonIdx)
+    {
 
+
+        // 내가 누른거랑 달라?
+        if ((ButtonType[AudioIdx(buttonIdx)] != buttonIdx))
+        {
+            //노래 추가
+            Add(buttonIdx);
+        }
+        else
+        {
+            //내가 누른거랑 같아?
+            Volume_Zero(buttonIdx);
+        }
+        // 같은 음악 토글할 때
+        else
+        {
+            if (PreSet)
+            {
+                ResetType(index / 6);
+                buttons[index / 6] = button;
+                _isPlaying[index / 6] = true;
+                GameManager.Sound.SetVolume((Sound)(index / 6), GameManager.Sound.Volume);
+
+                Color color = GetButton(index).GetComponent<Image>().color;
+                color.a = 0.5f;
+                GetButton(index).GetComponent<Image>().color = color;
+
+            }
+            else
+            {
+                if (_isPlaying[index / 6])
+                {
+                    _isPlaying[index / 6] = false;
+                    GameManager.Sound.SetVolume((Sound)(index / 6), 0);
+                    Color color = GetButton(index).GetComponent<Image>().color;
+                    color.a = 1f;
+                    GetButton(index).GetComponent<Image>().color = color;
+                }
+                else
+                {
+                    _isPlaying[index / 6] = true;
+                    GameManager.Sound.SetVolume((Sound)(index / 6), GameManager.Sound.Volume);
+                    Color color = GetButton(index).GetComponent<Image>().color;
+                    color.a = 0.5f;
+                    GetButton(index).GetComponent<Image>().color = color;
+
+                }
+            }
+
+        }
+
+
+
+
+
+
+        if (index >= 0 && index < 6)
+            {
+                SyncController.JobCollector_Start_Player0_A = null;
+                SyncController.JobCollector_Start_Player0_A += Play0_A;
+
+                SyncController.JobCollector_Start_Player0_B = null;
+                SyncController.JobCollector_Start_Player0_B += Play0_B;
+                return;
+            }
+            if (index >= 6 && index < 12)
+            {
+
+                SyncController.JobCollector_Start_Player1_A = null;
+                SyncController.JobCollector_Start_Player1_A += Play1_A;
+
+                SyncController.JobCollector_Start_Player1_B = null;
+                SyncController.JobCollector_Start_Player1_B += Play1_B;
+                return;
+
+            }
+            if (index >= 12 && index < 18)
+            {
+
+                SyncController.JobCollector_Start_Player2_A = null;
+                SyncController.JobCollector_Start_Player2_A += Play2_A;
+
+                SyncController.JobCollector_Start_Player2_B = null;
+                SyncController.JobCollector_Start_Player2_B += Play2_B;
+                return;
+
+            }
+            if (index >= 18 && index < 24)
+            {
+
+                SyncController.JobCollector_Start_Player3_A = null;
+                SyncController.JobCollector_Start_Player3_A += Play3_A;
+
+                SyncController.JobCollector_Start_Player3_B = null;
+                SyncController.JobCollector_Start_Player3_B += Play3_B;
+                return;
+
+            }
+
+        
+
+    }
     public void ResetType(int type)
     {
 
@@ -663,7 +739,147 @@ public class GameUI : UI_Scene
             GameManager.InGameData.SoundPlayer[3].StartPlayingAnim();
         }
     }
-    
+
     #endregion Buttons
 
+
+    /// <summary>
+    /// 현재 플레이중인 음악 버튼 타입 
+    /// </summary>
+    int[] ButtonType = new int[TYPENUM] { -1,-1,-1,-1};
+
+    /// <summary>
+    /// 플래이 대기 슬라이더
+    /// </summary>
+    
+
+    /// <summary>
+    /// 곡 넣기 & 바꾸기
+    /// </summary>
+    /// <param name="buttonIdx"></param>
+    public void Add(int buttonIdx)
+    {
+        //레코딩 처리 
+        RecordController.StartREC(Define.RecordMethod.Add, buttonIdx);
+
+
+        //타임슬라이더 처리
+        TimeSlider.Init();
+        int audioIdx = AudioIdx(buttonIdx);
+
+        // 지금 내 슬라이더가 안흘러가는 중이면 켜
+        if (SliderBackground[audioIdx].activeSelf == false)
+        {
+            SliderBackground[audioIdx].gameObject.SetActive(true);
+            FillSliderOverTime(SliderBackground[audioIdx].GetComponent<Slider>());
+
+        }
+        //전에 눌린게 있었다면 그 색은 원래 색으로 바꿔주고
+        if (ButtonType[audioIdx] != -1)
+        {
+            GetButton(ButtonType[audioIdx]).GetComponent<Image>().color = Color.white;
+        }
+        //내가 누른거 활성화 색으로 바꿔줘
+        GetButton(buttonIdx).GetComponent<Image>().color = new Color(1, 1, 1, 0.5f);
+
+        //나는 이제 이거 틀꺼야!
+        ButtonType[audioIdx] = buttonIdx;
+
+
+        // 예약
+        switch (audioIdx)
+        {
+            case 0:
+                SyncController.JobCollector_Start_Player0_A = null;
+                SyncController.JobCollector_Start_Player0_A += Play0_A;
+
+                SyncController.JobCollector_Start_Player0_B = null;
+                SyncController.JobCollector_Start_Player0_B += Play0_B;
+                break;
+            case 1:
+                SyncController.JobCollector_Start_Player1_A = null;
+                SyncController.JobCollector_Start_Player1_A += Play1_A;
+
+                SyncController.JobCollector_Start_Player1_B = null;
+                SyncController.JobCollector_Start_Player1_B += Play1_B;
+                break;
+            case 2:
+                SyncController.JobCollector_Start_Player2_A = null;
+                SyncController.JobCollector_Start_Player2_A += Play2_A;
+
+                SyncController.JobCollector_Start_Player2_B = null;
+                SyncController.JobCollector_Start_Player2_B += Play2_B;
+                break;
+            case 3:
+                SyncController.JobCollector_Start_Player3_A = null;
+                SyncController.JobCollector_Start_Player3_A += Play3_A;
+
+                SyncController.JobCollector_Start_Player3_B = null;
+                SyncController.JobCollector_Start_Player3_B += Play3_B;
+                break;
+
+        }
+
+    }
+    public void Volume_Zero(int buttonIdx)
+    {
+        RecordController.StartREC(Define.RecordMethod.Volume_Zero, buttonIdx);
+
+    }
+
+    public void Volume_Re(int buttonIdx)
+    {
+        RecordController.StartREC(Define.RecordMethod.Volume_Re, buttonIdx);
+
+    }
+
+    public void Pause()
+    {
+        Time.timeScale = 0;
+    }
+    public void UnPause()
+    {
+        Time.timeScale = 1.0f;
+
+    }
+
+    int AudioIdx(int buttonIdx)
+    {
+        return buttonIdx / 6;
+    }
+
+    void Play(int audioIdx, int buttonIdx)
+    {
+        string tmp = $"S{audioIdx}_{buttonIdx % 6}_a";
+        SoundtrackType sound;
+        if (System.Enum.TryParse(tmp, out sound))
+        {
+            GameManager.Sound.Play(audioIdx, sound, GameManager.Sound.GetVolume(Sound.Play0));
+            GameManager.InGameData.SoundPlayer[0].StartPlayingAnim();
+        }
+    }
+
+
+
+    public void FillSliderOverTime(Slider slider)
+    {
+        StartCoroutine(FillCoroutine(slider));
+    }
+
+    private IEnumerator FillCoroutine(Slider slider)
+    {
+        float startTime = Time.time;
+
+        float duration = SyncController.NextTick - startTime;
+
+        while (Time.time < startTime + duration)
+        {
+            float elapsed = Time.time - startTime;
+            slider.value = Mathf.Lerp(0, 1, elapsed / duration);
+            yield return null;  // 다음 프레임까지 대기
+        }
+
+        slider.value = 1;  // 마지막 값 보장
+        slider.gameObject.SetActive(false);
+    }
 }
