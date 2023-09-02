@@ -54,7 +54,6 @@ public class InGameDataManager
     int[] openedAchievements = new int[Achievementnum];
     public bool GetActiveAchievements(int idx)
     {
-        //return PlayerPrefs.GetInt($"GetActiveAchievements{idx}", 0) == 1;
         return openedAchievements[idx] == 1;
     }
     public void SetActiveAchievements(int idx,bool input = true)
@@ -64,6 +63,8 @@ public class InGameDataManager
             PlayerPrefs.SetInt($"GetActiveAchievements{idx}", 1);
             ActiveAchievementsIndex.Add(idx);
             openedAchievements[idx] = 1;
+            Debug.Log($"Open{idx}");
+
         }
 
         else
@@ -120,8 +121,13 @@ public class InGameDataManager
         SetActiveAchievements(0, true);
         SetActiveAchievements(1, true);
         SetActiveAchievements(2, true);
-
-
+        /*
+        SetActiveAchievements(3, false);
+        SetActiveAchievements(4, false);
+        SetActiveAchievements(5, false);
+        SetActiveAchievements(6, false);
+        SetActiveAchievements(7, false);
+        */
         for (int i=0;i< Achievementnum; i++)
         {
             if (GetActiveAchievements(i))

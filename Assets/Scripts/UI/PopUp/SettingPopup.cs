@@ -122,7 +122,7 @@ public class SettingPopup : UI_PopUp
             int randomIndex;
             if (GameManager.InGameData.ActiveAchievementsIndex.Count == 1)
             {
-                AchievementPopup.AchievementPlay(GameManager.InGameData.ActiveAchievementsIndex[0]);
+                AchievementPopUp.AchievementPlay(GameManager.InGameData.ActiveAchievementsIndex[0]);
             }
             else if (GameManager.InGameData.ActiveAchievementsIndex.Count > 1)
             {
@@ -140,12 +140,12 @@ public class SettingPopup : UI_PopUp
                             }
                             AutoIdx = randomIndex;
                             Debug.Log($"HelloWorld2  {GameManager.InGameData.ActiveAchievementsIndex[AutoIdx]}");
-                            AchievementPopup.AchievementPlay(GameManager.InGameData.ActiveAchievementsIndex[AutoIdx]);
+                            AchievementPopUp.AchievementPlay(GameManager.InGameData.ActiveAchievementsIndex[AutoIdx]);
                             sameAudio = 0;
                         }
                         else
                         {
-                            AchievementPopup.AchievementPlay(GameManager.InGameData.ActiveAchievementsIndex[AutoIdx]);
+                            AchievementPopUp.AchievementPlay(GameManager.InGameData.ActiveAchievementsIndex[AutoIdx]);
                             sameAudio = 1;
                         }
                         break;
@@ -158,12 +158,12 @@ public class SettingPopup : UI_PopUp
                                 randomIndex++;
                             }
                             AutoIdx = randomIndex;
-                            AchievementPopup.AchievementPlay(GameManager.InGameData.ActiveAchievementsIndex[AutoIdx]);
+                            AchievementPopUp.AchievementPlay(GameManager.InGameData.ActiveAchievementsIndex[AutoIdx]);
                             sameAudio = 0;
                         }
                         else
                         {
-                            AchievementPopup.AchievementPlay(GameManager.InGameData.ActiveAchievementsIndex[AutoIdx]);
+                            AchievementPopUp.AchievementPlay(GameManager.InGameData.ActiveAchievementsIndex[AutoIdx]);
                             sameAudio = 2;
                         }
                         break;
@@ -174,7 +174,7 @@ public class SettingPopup : UI_PopUp
                             randomIndex++;
                         }
                         AutoIdx = randomIndex;
-                        AchievementPopup.AchievementPlay(GameManager.InGameData.ActiveAchievementsIndex[AutoIdx]);
+                        AchievementPopUp.AchievementPlay(GameManager.InGameData.ActiveAchievementsIndex[AutoIdx]);
                         sameAudio = 0;
                         break;
                 }

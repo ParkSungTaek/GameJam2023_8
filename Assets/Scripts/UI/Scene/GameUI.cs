@@ -401,6 +401,7 @@ public class GameUI : UI_Scene
             GameManager.InGameData.SoundPlayer[audioIdx].StartPlayingAnim();
             NowAudioPlaying[audioIdx] = true;
         }
+        FindAcivement();
     }
     
     
@@ -595,16 +596,51 @@ public class GameUI : UI_Scene
 
     void FindAcivement()
     {
+
         for (int i=0;i < GameManager.InGameData.Achievements.Length;i++)
         {
-            if (!GameManager.InGameData.GetActiveAchievements(i))
+            if (!GameManager.InGameData.GetActiveAchievements(i) && FindAcivementIDX(i))
             {
-                for(int j = 0; j < TYPENUM; j++)
-                {
-                    //GameManager.InGameData.Achievements[j] == 
-                }
+                GameManager.InGameData.SetActiveAchievements(i);
             }
         }
+
     }
+    bool FindAcivementIDX(int idx)
+    {
+        if (Parse(GameManager.InGameData.Achievements[idx].Track0) != buttons[0])
+        {
+            return false;
+        }
+        if (Parse(GameManager.InGameData.Achievements[idx].Track1) != buttons[1])
+        {
+            return false;
+        }
+        if (Parse(GameManager.InGameData.Achievements[idx].Track2) != buttons[2])
+        {
+            return false;
+        }
+        if (Parse(GameManager.InGameData.Achievements[idx].Track3) != buttons[3])
+        {
+            return false;
+        }
+        return true;
+
+    }
+    Buttons Parse(string str)
+    {
+        Buttons button;
+        if (System.Enum.TryParse(str, out button))
+        {
+            return button;
+        }
+        else
+        {
+            Debug.Log($"Can't Parse {str}");
+            return Buttons.None;
+        }
+        
+    }
+
 
 }

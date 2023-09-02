@@ -1177,7 +1177,7 @@ GameObject:
   - component: {fileID: 4645846025027993460}
   - component: {fileID: 4645846025027993457}
   m_Layer: 5
-  m_Name: Achievement
+  m_Name: AchievementPopUp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

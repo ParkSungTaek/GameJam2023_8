@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class AchievementPopup : UI_PopUp
+public class AchievementPopUp : UI_PopUp
 {
     enum UIs
     {
@@ -67,6 +67,8 @@ public class AchievementPopup : UI_PopUp
 
     Vector3 MoveUIVec = new Vector3(900, 0, 0);
     const float MoveUITime = 0.5f;
+
+    int AchievementMAX = (int)Buttons.Achievement7;
     // Start is called before the first frame update
     void Start()
     {
@@ -76,22 +78,35 @@ public class AchievementPopup : UI_PopUp
         Bind<GameObject>(typeof(UIs));
 
         ButtonBind();
+        ColorRefresh();
         StartUIPosition = Get<GameObject>((int)UIs.UI).transform.position;
         Get<GameObject>((int)UIs.BG).SetActive(false);
     }
     bool active = false;
     #region Buttons
-    void ButtonBind()
+    public void ColorRefresh()
     {
-        for(int i = 0;i <= (int)Buttons.Achievement7;i++)
+        for (int i = 0; i <= AchievementMAX; i++)
         {
-            if (GameManager.InGameData.GetActiveAchievements(i))
+            if (!GameManager.InGameData.GetActiveAchievements(i))
             {
                 GetButton(i).gameObject.GetComponent<Image>().color = Color.black;
             }
-            BindEvent(GetButton(i).gameObject, Achievement);
+            else
+            {
+                GetButton(i).gameObject.GetComponent<Image>().color = Color.clear;
+            }
 
         }
+
+    }
+    void ButtonBind()
+    {
+        for (int i = 0; i <= AchievementMAX; i++)
+        {
+            BindEvent(GetButton(i).gameObject, Achievement);
+        }
+
         BindEvent(GetButton((int)Buttons.Arrow).gameObject, ClickArrow);
 
     }
@@ -137,15 +152,13 @@ public class AchievementPopup : UI_PopUp
         {
             Debug.Log("변환 실패: " + tmp);
         }
-
-        
-        
     }
 
 
     Coroutine Coroutine;
     void ClickArrow(PointerEventData evt)
     {
+        ColorRefresh();
         if (!active)
         {
             active = true;
