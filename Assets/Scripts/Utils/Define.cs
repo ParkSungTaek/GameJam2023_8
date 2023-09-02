@@ -177,7 +177,7 @@ public class Define
         DontPool,
     }
 
-    public enum RecordMethod
+    public enum RecordProtocol
     {
         Add,
         Delete,

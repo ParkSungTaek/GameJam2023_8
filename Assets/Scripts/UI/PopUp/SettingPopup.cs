@@ -18,6 +18,8 @@ public class SettingPopup : UI_PopUp
     {
         Arrow,
         Auto,
+        Record,
+        PlaySavedMusic,
     }
     Vector3 StartUIPosition;
 
@@ -34,8 +36,9 @@ public class SettingPopup : UI_PopUp
         Get<GameObject>((int)UIs.SoundVolumeSlider).GetComponent<Slider>().onValueChanged.AddListener(delegate { VolumeChange(); });
         Get<GameObject>((int)UIs.SoundVolumeSlider).GetComponent<Slider>().value = GameManager.Sound.Volume;
         BindEvent(GetButton((int)Buttons.Arrow).gameObject, ClickArrow);
-
+        BindEvent(GetButton((int)Buttons.Record).gameObject, RecordToggle);
         BindEvent(GetButton((int)Buttons.Auto).gameObject, Auto);
+        BindEvent(GetButton((int)Buttons.PlaySavedMusic).gameObject, PlayRecorededFile);
 
         StartUIPosition = Get<GameObject>((int)UIs.UI).transform.position;
         Get<GameObject>((int)UIs.BG).SetActive(false);
@@ -46,9 +49,9 @@ public class SettingPopup : UI_PopUp
     {
         float volume = Get<GameObject>((int)UIs.SoundVolumeSlider).GetComponent<Slider>().value;
         GameManager.Sound.Volume = volume;
-        for(int i = 0; i < 4; i++)
+        for (int i = 0; i < 4; i++)
         {
-            
+
             if (GameUI.Instance.NowAudioPlaying[i])
             {
                 GameManager.Sound.SetVolume((Define.Sound)i, volume);
@@ -64,7 +67,7 @@ public class SettingPopup : UI_PopUp
     int AutoIdx = 0;
     int sameAudio = 0;
     System.Random random = new System.Random();
-    bool RandomPresent (int persent)
+    bool RandomPresent(int persent)
     {
         if (random.Next(0, 100) < persent)
         {
@@ -75,6 +78,22 @@ public class SettingPopup : UI_PopUp
             return false;
         }
     }
+
+    public void RecordToggle(PointerEventData evt)
+    {
+        GetButton((int)Buttons.Record).gameObject.GetComponent<Image>().color
+            = RecordController.IsREC ? Color.white : new Color(1, 1, 1, 0.5f);
+
+        RecordController.RecordToggle();
+        
+    }
+
+    public void PlayRecorededFile(PointerEventData evt)
+    {
+        RecordController.Instance.PlayRecordedMusic();
+    }
+
+
     public void Auto(PointerEventData evt)
     {
 
@@ -191,6 +210,7 @@ public class SettingPopup : UI_PopUp
         yield return new WaitForSeconds(MoveUITime);
         Get<GameObject>((int)UIs.BG).SetActive(false);
     }
+
     public override void ReOpen()
     {
         //throw new System.NotImplementedException();

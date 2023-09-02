@@ -85,14 +85,20 @@ public class AchievementPopup : UI_PopUp
     {
         for(int i = 0;i <= (int)Buttons.Achievement7;i++)
         {
+            if (GameManager.InGameData.GetActiveAchievements(i))
+            {
+                GetButton(i).gameObject.GetComponent<Image>().color = Color.black;
+            }
             BindEvent(GetButton(i).gameObject, Achievement);
 
         }
         BindEvent(GetButton((int)Buttons.Arrow).gameObject, ClickArrow);
 
-
     }
-
+    public void OpenAchiveIDX(int i)
+    {
+        GetButton(i).gameObject.GetComponent<Image>().color = Color.white;
+    }
 
     public static void AchievementPlay(int idx)
     {
@@ -122,7 +128,10 @@ public class AchievementPopup : UI_PopUp
         Buttons button;
         if (System.Enum.TryParse(tmp, out button))
         {
-            AchievementPlay((int)button);
+            if (GameManager.InGameData.GetActiveAchievements((int)button))
+            {
+                AchievementPlay((int)button);
+            }
         }
         else
         {

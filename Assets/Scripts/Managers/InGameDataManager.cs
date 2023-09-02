@@ -51,18 +51,27 @@ public class InGameDataManager
         new Achievement { Track0 = "Button2",  Track1 = "Button8",    Track2 = "Button12",    Track3 = "Button19" },
         new Achievement { Track0 = "Button3",  Track1 = "Button7",    Track2 = "Button14",    Track3 = "Button20" },
     };
-
-    bool GetActiveAchievements(int idx)
+    int[] openedAchievements = new int[Achievementnum];
+    public bool GetActiveAchievements(int idx)
     {
-        return PlayerPrefs.GetInt($"GetActiveAchievements{idx}", 0) == 1;
+        //return PlayerPrefs.GetInt($"GetActiveAchievements{idx}", 0) == 1;
+        return openedAchievements[idx] == 1;
     }
-    void SetActiveAchievements(int idx,bool input)
+    public void SetActiveAchievements(int idx,bool input = true)
     {
-        if(input )
+        if(input)
+        {
             PlayerPrefs.SetInt($"GetActiveAchievements{idx}", 1);
+            ActiveAchievementsIndex.Add(idx);
+            openedAchievements[idx] = 1;
+        }
+
         else
+        {
             PlayerPrefs.SetInt($"GetActiveAchievements{idx}", 0);
-        ActiveAchievementsIndex.Add(idx);
+            openedAchievements[idx] = 0;
+        }
+            
     }
     public List<int> ActiveAchievementsIndex { get; set; } = new List<int>();
     #endregion
@@ -77,6 +86,10 @@ public class InGameDataManager
         {
             SoundPlayer[i] = GameObject.Find($"Player{i}")?.GetComponent<PlayerController>();
             
+        }
+        for(int i=0;i< Achievementnum; i++)
+        {
+            openedAchievements[i] = PlayerPrefs.GetInt($"GetActiveAchievements{i}", 0);
         }
 
         SoundtrackType0 = Define.SoundtrackType0.MaxCount;

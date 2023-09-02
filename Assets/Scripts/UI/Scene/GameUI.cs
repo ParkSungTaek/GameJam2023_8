@@ -28,6 +28,12 @@ public class GameUI : UI_Scene
     /// 무슨 버튼을 눌렀는지 기억
     /// </summary>
     Buttons[] buttons { get; set; } = new Buttons[TYPENUM];
+    /// <summary>
+    /// 현재 idx 플레이어에서 어떤 노래를 플레이중인가?
+    /// </summary>
+    /// <param name="idx">플레이어 idx </param>
+    /// <returns></returns>
+    public int PlayButton(int idx) { return (int)buttons[idx]; }
     public bool[] NowAudioPlaying { get; set; } = new bool[TYPENUM] { false, false, false, false };
     const float deltaTime = 0.5f;
     GameObject[] SliderBackground { get; set; } = new GameObject[TYPENUM];
@@ -407,8 +413,9 @@ public class GameUI : UI_Scene
     /// <param name="buttonIdx"></param>
     public void Add(int buttonIdx)
     {
+        if (buttonIdx == (int)Buttons.None) { return; } 
         //레코딩 처리 
-        RecordController.REC(Define.RecordMethod.Add, buttonIdx);
+        RecordController.REC(Define.RecordProtocol.Add, buttonIdx);
 
         //타임슬라이더 처리
         TimeSlider.Init();
@@ -475,7 +482,7 @@ public class GameUI : UI_Scene
     public void Delete(int buttonIdx)
     {
         //레코딩 처리
-        RecordController.REC(Define.RecordMethod.Volume_Zero, buttonIdx);
+        RecordController.REC(Define.RecordProtocol.Volume_Zero, buttonIdx);
 
         int audioIdx = AudioIdx(buttonIdx);
         
@@ -512,7 +519,7 @@ public class GameUI : UI_Scene
     }
     public void Volume_Zero(int audioIdx)
     {
-        RecordController.REC(Define.RecordMethod.Volume_Zero, audioIdx);
+        RecordController.REC(Define.RecordProtocol.Volume_Zero, audioIdx);
         
         GetButton((int)Buttons.RemoteButton0 + audioIdx).GetComponent<Image>().color = ActiveColor;
 
@@ -522,7 +529,7 @@ public class GameUI : UI_Scene
 
     public void Volume_Re(int audioIdx)
     {
-        RecordController.REC(Define.RecordMethod.Volume_Zero, audioIdx);
+        RecordController.REC(Define.RecordProtocol.Volume_Zero, audioIdx);
 
         GetButton((int)Buttons.RemoteButton0 + audioIdx).GetComponent<Image>().color = Color.white;
         
@@ -584,6 +591,20 @@ public class GameUI : UI_Scene
         }
 
         return false;
+    }
+
+    void FindAcivement()
+    {
+        for (int i=0;i < GameManager.InGameData.Achievements.Length;i++)
+        {
+            if (!GameManager.InGameData.GetActiveAchievements(i))
+            {
+                for(int j = 0; j < TYPENUM; j++)
+                {
+                    //GameManager.InGameData.Achievements[j] == 
+                }
+            }
+        }
     }
 
 }
