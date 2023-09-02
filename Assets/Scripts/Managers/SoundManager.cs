@@ -8,8 +8,8 @@ public class SoundManager
     AudioSource[] _audioSources = new AudioSource[(int)Define.Sound.MaxCount];
     public AudioSource[] AudioSources { get { return _audioSources; } }
     Dictionary<string, AudioClip> _audioClips = new Dictionary<string, AudioClip>();
-
-    public float Volume { get { return PlayerPrefs.GetFloat("Volume", 1.0f); } set { PlayerPrefs.SetFloat("Volume", value); } } 
+    float _volume = 1.0f;
+    public float Volume { get { return _volume; } set { _volume = value; PlayerPrefs.SetFloat("Volume", value); } } 
     #region Init
     public void Init()
     {
@@ -20,11 +20,14 @@ public class SoundManager
             root = new GameObject { name = "@Sound" };
             UnityEngine.Object.DontDestroyOnLoad(root);
 
+            _volume = PlayerPrefs.GetFloat("Volume", 1.0f);
+
             for (Define.Sound s = Define.Sound.Play0; s < Define.Sound.MaxCount; s++)
             {
                 GameObject go = new GameObject { name = $"{s}" };
                 _audioSources[(int)s] = go.AddComponent<AudioSource>();
                 go.transform.parent = root.transform;
+                _audioSources[(int)s].volume = Volume;
             }
 
             //GetOrAddAudioClip 전체 로딩

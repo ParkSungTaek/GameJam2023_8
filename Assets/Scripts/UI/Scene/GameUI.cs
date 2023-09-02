@@ -11,27 +11,29 @@ using UnityEditor.Presets;
 
 public class GameUI : UI_Scene
 {
+    #region Singleton 
     static GameUI _instance;
     public static GameUI Instance { get { return _instance; } }
     GameUI() { }
+    #endregion Singleton 
+
 
     #region Data
     const int TYPENUM = InGameDataManager.TYPENUM;
     string _clickButtonName { get; set; }
-    float[] time { get; set; } = new float[TYPENUM];
-    bool[] Click { get; set; } = { false, false, false, false };
-    //int _clickIndex;
-    Buttons[] buttonsDown { get; set; } = new Buttons[TYPENUM];
-    Buttons[] buttons = new Buttons[TYPENUM];
-    bool[] _isPlaying = new bool[TYPENUM];
-    public bool[] IsPlaying { get { return _isPlaying; } }
+    bool[] RemoteButtonHold { get; set; } = { false, false, false, false };
+    bool[] RemoteButtonClick { get; set; } = { false, false, false, false };
+
+    /// <summary>
+    /// 무슨 버튼을 눌렀는지 기억
+    /// </summary>
+    Buttons[] buttons { get; set; } = new Buttons[TYPENUM];
+    public bool[] NowAudioPlaying { get; set; } = new bool[TYPENUM] { false, false, false, false };
     const float deltaTime = 0.5f;
-    bool[] _isWaiting = new bool[TYPENUM];
-    float[] _isWaitingTime = new float[TYPENUM];
     GameObject[] SliderBackground { get; set; } = new GameObject[TYPENUM];
 
+    Color ActiveColor = new Color(1, 1, 1, 0.5f);
     #endregion Data
-    SoundPlayerController soundPlayerController;
 
 
     enum GameObjects
@@ -75,6 +77,9 @@ public class GameUI : UI_Scene
         RemoteButton2,
         RemoteButton3,
     }
+
+
+
     enum Texts
     {
     }
@@ -103,7 +108,6 @@ public class GameUI : UI_Scene
     public override void Init()
     {
         base.Init();
-        soundPlayerController = GameObject.FindObjectOfType<SoundPlayerController>();
         
         _instance = this;
         Bind<GameObject>(typeof(GameObjects));
@@ -120,12 +124,10 @@ public class GameUI : UI_Scene
         for(int i = 0; i < TYPENUM; i++)
         {
             buttons[i] = Buttons.None;
-            _isPlaying[i] = true;
         }
         for (int i = 0; i < TYPENUM; i++)
         {
             Get<Slider>(i).value = 0;
-            _isWaiting[i] = false;
             SliderBackground[i] = Get<Slider>(i).transform.Find("Background").gameObject;
             SliderBackground[i].SetActive(false);
 
@@ -138,7 +140,6 @@ public class GameUI : UI_Scene
         SyncController.JobCollector_End_A += () => {
             for (int i = (int)Sliders.Slider0; i <= (int)Sliders.Slider3; i++)
             {
-                _isWaiting[i] = false;
                 SliderBackground[i].SetActive(false);
                 Get<Slider>(i).value = 0;
             }
@@ -147,7 +148,6 @@ public class GameUI : UI_Scene
         SyncController.JobCollector_End_B += () => {
             for (int i = (int)Sliders.Slider0; i <= (int)Sliders.Slider3; i++)
             {
-                _isWaiting[i] = false;
                 SliderBackground[i].SetActive(false);
                 Get<Slider>(i).value = 0;
             }
@@ -215,7 +215,6 @@ public class GameUI : UI_Scene
     }
 
     
-    
     /// <summary>
     /// 음악 버튼 눌렀을때 처리
     /// </summary>
@@ -226,42 +225,50 @@ public class GameUI : UI_Scene
         _clickButtonName = evt.pointerCurrentRaycast.gameObject.name;
 
         Buttons button;
-        int _clickIndex;
+        int audioIdx;
         if (System.Enum.TryParse(_clickButtonName, out button))
         {
-            ////soundPlayerController.Add((int)button);
-
-            _clickIndex = ((int)button)/6;
-            buttonsDown[_clickIndex] = button;
-            ButtonAction(_clickButtonName);
-            ButtonActionReNew((int)button);
-
+            ButtonAction((int)button);
 
         }
 
 
     }
-    
 
+    Coroutine[] remoteButtonsCoroutine = new Coroutine[TYPENUM];
     void RemoteButtonDown(PointerEventData evt)
     {
         
         _clickButtonName = evt.pointerCurrentRaycast.gameObject.name;
         Buttons button;
-        int _clickIndex;
+        // 어디 오디오야?
+        int audioIdx;
         if (System.Enum.TryParse(_clickButtonName, out button))
         {
-            _clickIndex = button - Buttons.RemoteButton0;
-            if (buttons[_clickIndex] == Buttons.None)
+            audioIdx = button - Buttons.RemoteButton0;
+            //노래가 안틀어져있으면 할 일이 없어
+            RemoteButtonClick[audioIdx] = true;
+            if (buttons[audioIdx] == Buttons.None)
             {
                 return;
             }
-            _clickButtonName = Enum.GetName(typeof(Buttons), buttons[_clickIndex]);
-            
-            Click[_clickIndex] = true;
 
-            time[_clickIndex] = Time.time;
-            //Down(tmp);
+            remoteButtonsCoroutine[audioIdx] = StartCoroutine(RemoteButtonsCoroutine(audioIdx));
+
+        }
+    }
+    IEnumerator RemoteButtonsCoroutine(int audioIdx)
+    {
+        yield return new WaitForSeconds(deltaTime);
+        //버튼 장시간 사용
+        RemoteButtonHold[audioIdx] = true;
+        for (int i = 0; i < TYPENUM; i++)
+        {
+            if (!RemoteButtonHold[i])
+            {
+                Volume_Zero(i);
+            }
+            
         }
 
 
@@ -270,488 +277,129 @@ public class GameUI : UI_Scene
     {
         _clickButtonName = evt.pointerEnter.gameObject.name;
         Buttons button;
-        int _clickIndex;
+        int audioIdx;
         if (System.Enum.TryParse(_clickButtonName, out button))
         {
-            
-            _clickIndex = button - Buttons.RemoteButton0;
-            if (Click[_clickIndex])
+
+            audioIdx = button - Buttons.RemoteButton0;
+
+            if (RemoteButtonClick[audioIdx])
             {
-                if (buttons[_clickIndex] == Buttons.None)
+                Debug.Log(audioIdx+ " Out");
+                RemoteButtonClick[audioIdx] = false;
+                
+                if (buttons[audioIdx] == Buttons.None)
                 {
                     return;
                 }
-
-                Click[_clickIndex] = false;
-
-                _clickButtonName = Enum.GetName(typeof(Buttons), buttons[_clickIndex]);
-                // 짧게 클릭
-                if (time[_clickIndex] + deltaTime > Time.time)
+                if (remoteButtonsCoroutine[audioIdx] != null)
                 {
-                    ButtonAction(_clickButtonName);
+                    StopCoroutine(remoteButtonsCoroutine[audioIdx]);
                 }
-                else
+                //길게 잡았다가 떼는거라면
+                if (RemoteButtonHold[audioIdx])
                 {
-                    for (int i = 0; i < TYPENUM; i++)
+                    RemoteButtonHold[audioIdx] = false;
+
+                    if (NowUsingRemote())
                     {
-                        if (IsPlaying[i])
-                        {
-                            GameManager.Sound.SetVolume((Define.Sound)i, GameManager.Sound.Volume);
-                        }
-                    }
-                }
-            }
-        }
-
-        
-    }
-    private void Update()
-    {
-        bool isStillDown = false;
-        for(int _clickIndex = 0; _clickIndex < TYPENUM; _clickIndex++)
-        {
-            if (Click[_clickIndex] && time[_clickIndex] + deltaTime < Time.time)
-            {
-                isStillDown = true;
-            }
-        }
-        if(isStillDown) 
-        {
-            for (int _clickIndex = 0; _clickIndex < TYPENUM; _clickIndex++)
-            {
-                if (Click[_clickIndex] && time[_clickIndex] + deltaTime < Time.time)
-                {
-                    isStillDown = true;
-                }
-
-                GameManager.Sound.SetVolume((Define.Sound)_clickIndex, (Click[_clickIndex] && time[_clickIndex] + deltaTime < Time.time) ? GameManager.Sound.Volume : 0);
-            }
-        }
-        for (int _clickIndex = 0; _clickIndex < TYPENUM; _clickIndex++)
-        {
-            if (_isWaiting[_clickIndex])
-            {
-                Get<Slider>(_clickIndex).value += Time.deltaTime * (1 / _isWaitingTime[_clickIndex]);
-
-            }
-        }
-        
-
-
-    }
-    public void ButtonAction(string buttonName,bool None = false, bool PreSet = false)
-    {
-        string tmp = buttonName;
-        Buttons button;
-        if (System.Enum.TryParse(tmp, out button))
-        {
-
-            TimeSlider.Init();
-            int index = (int)button;
-            buttonsDown[index/6] = button;
-            int beforePlaylist = (int)buttons[index / 6];
-
-            if (!None )
-            {
-                // 다른 음악으로 바꿀 때
-                if (index != beforePlaylist)
-                {
-                    ResetType(index / 6);
-                    buttons[index / 6] = button;
-                    _isPlaying[index / 6] = true;
-                    GameManager.Sound.SetVolume((Sound)(index / 6), GameManager.Sound.Volume);
-
-                    Color color = GetButton(index).GetComponent<Image>().color;
-                    color.a = 0.5f;
-                    GetButton(index).GetComponent<Image>().color = color;
-
-                    if(SliderBackground[index / 6].gameObject.activeSelf == false)
-                    {
-                        _isWaiting[index / 6] = true;
-                        _isWaitingTime[index / 6] = SyncController.NextTick - Time.time;
-                        SliderBackground[index / 6].SetActive(true);
-
-                    }
-
-                }
-                // 같은 음악 토글할 때
-                else
-                {
-                    if (PreSet)
-                    {
-                        ResetType(index / 6);
-                        buttons[index / 6] = button;
-                        _isPlaying[index / 6] = true;
-                        GameManager.Sound.SetVolume((Sound)(index / 6), GameManager.Sound.Volume);
-
-                        Color color = GetButton(index).GetComponent<Image>().color;
-                        color.a = 0.5f;
-                        GetButton(index).GetComponent<Image>().color = color;
+                        Volume_Zero(audioIdx);
 
                     }
                     else
                     {
-                        if (_isPlaying[index / 6])
+                        for (int i = 0; i < TYPENUM; i++)
                         {
-                            _isPlaying[index / 6] = false;
-                            GameManager.Sound.SetVolume((Sound)(index / 6), 0);
-                            Color color = GetButton(index).GetComponent<Image>().color;
-                            color.a = 1f;
-                            GetButton(index).GetComponent<Image>().color = color;
-                        }
-                        else
-                        {
-                            _isPlaying[index / 6] = true;
-                            GameManager.Sound.SetVolume((Sound)(index / 6), GameManager.Sound.Volume);
-                            Color color = GetButton(index).GetComponent<Image>().color;
-                            color.a = 0.5f;
-                            GetButton(index).GetComponent<Image>().color = color;
+                            if (NowAudioPlaying[i])
+                            {
+                                Volume_Re(i);
 
+                            }
                         }
                     }
 
                 }
-                
+                // 짧게 클릭
+                else
+                {
+                    
+                    //지금 노래가 나오는 중이야?
+                    if (GetButton((int)Buttons.RemoteButton0 + audioIdx).GetComponent<Image>().color == Color.white)
+                    {
+                        //꺼
+                        Volume_Zero(audioIdx);
+                    }
+                    else
+                    {
+                        //켜
+                        Volume_Re(audioIdx);
+                    }
+
+                }
             }
-            
-            else
-            {
-                ResetType(index / 6);
-                return;
-            }
-
-
-
-            
-
-            if (index >= 0 && index < 6)
-            {
-                SyncController.JobCollector_Start_Player0_A = null;
-                SyncController.JobCollector_Start_Player0_A += Play0_A;
-
-                SyncController.JobCollector_Start_Player0_B = null;
-                SyncController.JobCollector_Start_Player0_B += Play0_B;
-                return;
-            }
-            if (index >= 6 && index < 12)
-            {
-
-                SyncController.JobCollector_Start_Player1_A = null;
-                SyncController.JobCollector_Start_Player1_A += Play1_A;
-
-                SyncController.JobCollector_Start_Player1_B = null;
-                SyncController.JobCollector_Start_Player1_B += Play1_B;
-                return;
-
-            }
-            if (index >= 12 && index < 18)
-            {
-
-                SyncController.JobCollector_Start_Player2_A = null;
-                SyncController.JobCollector_Start_Player2_A += Play2_A;
-
-                SyncController.JobCollector_Start_Player2_B = null;
-                SyncController.JobCollector_Start_Player2_B += Play2_B;
-                return;
-
-            }
-            if (index >= 18 && index < 24)
-            {
-
-                SyncController.JobCollector_Start_Player3_A = null;
-                SyncController.JobCollector_Start_Player3_A += Play3_A;
-
-                SyncController.JobCollector_Start_Player3_B = null;
-                SyncController.JobCollector_Start_Player3_B += Play3_B;
-                return;
-
-            }
-
         }
-        else
-        {
-            Debug.Log("변환 실패 At GameUI: " + tmp);
-        }
-
+        
     }
-    public void ButtonActionReNew(int buttonIdx)
+    
+    public void ButtonAction(int buttonIdx)
     {
-
-
         // 내가 누른거랑 달라?
-        if ((ButtonType[AudioIdx(buttonIdx)] != buttonIdx))
+        if ((buttons[AudioIdx(buttonIdx)] != (Buttons)buttonIdx))
         {
             //노래 추가
             Add(buttonIdx);
         }
+        //내가 누른거랑 같아?
         else
         {
-            //내가 누른거랑 같아?
-            Volume_Zero(buttonIdx);
+            
+            Delete(buttonIdx);
         }
-        // 같은 음악 토글할 때
+
+    }
+    
+
+
+
+    /// <summary>
+    /// 이 아이디어의 장점 : 깔끔함, 재사용성, 중복코드 감소
+    /// 
+    /// </summary>
+    /// <param name="audioIdx"></param>
+    /// <param name="buttonIdx"></param>
+    void Play_Action(int audioIdx,int buttonIdx,bool a)
+    {
+        string tmp;
+        if (a)
+        {
+            tmp = $"S{audioIdx}_{buttonIdx % 6}_a";
+
+        }
         else
         {
-            if (PreSet)
+            tmp = $"S{audioIdx}_{buttonIdx % 6}_b";
+        }
+        SoundtrackType sound;
+        if (System.Enum.TryParse(tmp, out sound))
+        {
+           
+            if (GetButton((int)Buttons.RemoteButton0 + audioIdx).GetComponent<Image>().color == ActiveColor)
             {
-                ResetType(index / 6);
-                buttons[index / 6] = button;
-                _isPlaying[index / 6] = true;
-                GameManager.Sound.SetVolume((Sound)(index / 6), GameManager.Sound.Volume);
-
-                Color color = GetButton(index).GetComponent<Image>().color;
-                color.a = 0.5f;
-                GetButton(index).GetComponent<Image>().color = color;
-
+                GameManager.Sound.Play(audioIdx, sound, 0);
             }
             else
             {
-                if (_isPlaying[index / 6])
-                {
-                    _isPlaying[index / 6] = false;
-                    GameManager.Sound.SetVolume((Sound)(index / 6), 0);
-                    Color color = GetButton(index).GetComponent<Image>().color;
-                    color.a = 1f;
-                    GetButton(index).GetComponent<Image>().color = color;
-                }
-                else
-                {
-                    _isPlaying[index / 6] = true;
-                    GameManager.Sound.SetVolume((Sound)(index / 6), GameManager.Sound.Volume);
-                    Color color = GetButton(index).GetComponent<Image>().color;
-                    color.a = 0.5f;
-                    GetButton(index).GetComponent<Image>().color = color;
-
-                }
+                GameManager.Sound.Play(audioIdx, sound, GameManager.Sound.Volume);
             }
 
-        }
-
-
-
-
-
-
-        if (index >= 0 && index < 6)
-            {
-                SyncController.JobCollector_Start_Player0_A = null;
-                SyncController.JobCollector_Start_Player0_A += Play0_A;
-
-                SyncController.JobCollector_Start_Player0_B = null;
-                SyncController.JobCollector_Start_Player0_B += Play0_B;
-                return;
-            }
-            if (index >= 6 && index < 12)
-            {
-
-                SyncController.JobCollector_Start_Player1_A = null;
-                SyncController.JobCollector_Start_Player1_A += Play1_A;
-
-                SyncController.JobCollector_Start_Player1_B = null;
-                SyncController.JobCollector_Start_Player1_B += Play1_B;
-                return;
-
-            }
-            if (index >= 12 && index < 18)
-            {
-
-                SyncController.JobCollector_Start_Player2_A = null;
-                SyncController.JobCollector_Start_Player2_A += Play2_A;
-
-                SyncController.JobCollector_Start_Player2_B = null;
-                SyncController.JobCollector_Start_Player2_B += Play2_B;
-                return;
-
-            }
-            if (index >= 18 && index < 24)
-            {
-
-                SyncController.JobCollector_Start_Player3_A = null;
-                SyncController.JobCollector_Start_Player3_A += Play3_A;
-
-                SyncController.JobCollector_Start_Player3_B = null;
-                SyncController.JobCollector_Start_Player3_B += Play3_B;
-                return;
-
-            }
-
-        
-
-    }
-    public void ResetType(int type)
-    {
-
-        switch (type)
-        {
-            case 0:
-                _isPlaying[0] = true;
-                buttons[0] = Buttons.None;
-                SyncController.JobCollector_Start_Player0_A = null;
-                SyncController.JobCollector_Start_Player0_B = null;
-                for (int i = 0; i < 6; i++)
-                {
-
-                    Color color = GetButton(i).GetComponent<Image>().color;
-                    color.a = 1f;
-                    GetButton(i).GetComponent<Image>().color = color;
-                }
-
-                break;
-            case 1:
-                _isPlaying[1] = true;
-                buttons[1] = Buttons.None;
-                SyncController.JobCollector_Start_Player1_A = null;
-                SyncController.JobCollector_Start_Player1_B = null;
-
-                for (int i = 6; i < 12; i++)
-                {
-                    
-                    Color color = GetButton(i).GetComponent<Image>().color;
-                    color.a = 1f;
-                    GetButton(i).GetComponent<Image>().color = color;
-                }
-                break;
-            case 2:
-                _isPlaying[2] = true;
-                buttons[2] = Buttons.None;
-                SyncController.JobCollector_Start_Player2_A = null;
-                SyncController.JobCollector_Start_Player2_B = null;
-
-                for (int i = 12; i < 18; i++)
-                {
-
-                    Color color = GetButton(i).GetComponent<Image>().color;
-                    color.a = 1f;
-                    GetButton(i).GetComponent<Image>().color = color;
-                }
-                break;
-            case 3:
-                _isPlaying[3] = true;
-                buttons[3] = Buttons.None;
-                SyncController.JobCollector_Start_Player3_A = null;
-                SyncController.JobCollector_Start_Player3_B = null;
-                for (int i = 18; i < 24; i++)
-                {
-
-                    Color color = GetButton(i).GetComponent<Image>().color;
-                    color.a = 1f;
-                    GetButton(i).GetComponent<Image>().color = color;
-                }
-                break;
-            default: break;
-        }
-        
-    }
-    //0 : 땅     1: 시티   2: 해    4: 하늘
-    void Play0_A()
-    {
-
-        int index = (int)buttons[0];
-
-        string tmp = $"S{index / 6}_{index % 6}_a";
-        SoundtrackType0 sound;
-        if (System.Enum.TryParse(tmp, out sound))
-        {
-            GameManager.Sound.Play(sound,GameManager.Sound.GetVolume(Sound.Play0));
-            GameManager.InGameData.SoundPlayer[0].StartPlayingAnim();
+            GameManager.InGameData.SoundPlayer[audioIdx].StartPlayingAnim();
+            NowAudioPlaying[audioIdx] = true;
         }
     }
-    void Play0_B()
-    {
-        int index = (int)buttons[0];
-        string tmp = $"S{index / 6}_{index % 6}_b";
-        SoundtrackType0 sound;
-        if (System.Enum.TryParse(tmp, out sound))
-        {
-            GameManager.Sound.Play(sound, GameManager.Sound.GetVolume(Sound.Play0));
-            GameManager.InGameData.SoundPlayer[0].StartPlayingAnim();
-        }
-    }
-
-    void Play1_A()
-    {
-
-        int index = (int)buttons[1];
-        string tmp = $"S{index / 6}_{index % 6}_a";
-        SoundtrackType1 sound;
-        if (System.Enum.TryParse(tmp, out sound))
-        {
-            GameManager.Sound.Play(sound, GameManager.Sound.GetVolume(Sound.Play1));
-            GameManager.InGameData.SoundPlayer[1].StartPlayingAnim(GameManager.InGameData.ButtonDatas[index]);
-        }
-    }
-    void Play1_B()
-    {
-        int index = (int)buttons[1];
-        string tmp = $"S{index / 6}_{index % 6}_b";
-        SoundtrackType1 sound;
-        if (System.Enum.TryParse(tmp, out sound))
-        {
-            GameManager.Sound.Play(sound, GameManager.Sound.GetVolume(Sound.Play1));
-            GameManager.InGameData.SoundPlayer[1].StartPlayingAnim(GameManager.InGameData.ButtonDatas[index]);
-        }
-    }
-
-    void Play2_A()
-    {
-
-        int index = (int)buttons[2];
-        string tmp = $"S{index / 6}_{index % 6}_a";
-        SoundtrackType2 sound;
-        if (System.Enum.TryParse(tmp, out sound))
-        {
-            GameManager.Sound.Play(sound, GameManager.Sound.GetVolume(Sound.Play2));
-            GameManager.InGameData.SoundPlayer[2].StartPlayingAnim(GameManager.InGameData.ButtonDatas[index]);
-        }
-    }
-    void Play2_B()
-    {
-        int index = (int)buttons[2];
-        string tmp = $"S{index / 6}_{index % 6}_b";
-        SoundtrackType2 sound;
-        if (System.Enum.TryParse(tmp, out sound))
-        {
-            GameManager.Sound.Play(sound, GameManager.Sound.GetVolume(Sound.Play2));
-            GameManager.InGameData.SoundPlayer[2].StartPlayingAnim(GameManager.InGameData.ButtonDatas[index]);
-        }
-    }
-
-    void Play3_A()
-    {
-
-        int index = (int)buttons[3];
-        string tmp = $"S{index / 6}_{index % 6}_a";
-        SoundtrackType3 sound;
-        if (System.Enum.TryParse(tmp, out sound))
-        {
-            GameManager.Sound.Play(sound, GameManager.Sound.GetVolume(Sound.Play3));
-            GameManager.InGameData.SoundPlayer[3].StartPlayingAnim();
-        }
-    }
-    void Play3_B()
-    {
-        int index = (int)buttons[3];
-        string tmp = $"S{index / 6}_{index % 6}_b";
-        SoundtrackType3 sound;
-        if (System.Enum.TryParse(tmp, out sound))
-        {
-            GameManager.Sound.Play(sound, GameManager.Sound.GetVolume(Sound.Play3));
-            GameManager.InGameData.SoundPlayer[3].StartPlayingAnim();
-        }
-    }
-
+    
+    
     #endregion Buttons
 
-
-    /// <summary>
-    /// 현재 플레이중인 음악 버튼 타입 
-    /// </summary>
-    int[] ButtonType = new int[TYPENUM] { -1,-1,-1,-1};
-
-    /// <summary>
-    /// 플래이 대기 슬라이더
-    /// </summary>
-    
 
     /// <summary>
     /// 곡 넣기 & 바꾸기
@@ -760,84 +408,133 @@ public class GameUI : UI_Scene
     public void Add(int buttonIdx)
     {
         //레코딩 처리 
-        RecordController.StartREC(Define.RecordMethod.Add, buttonIdx);
-
+        RecordController.REC(Define.RecordMethod.Add, buttonIdx);
 
         //타임슬라이더 처리
         TimeSlider.Init();
         int audioIdx = AudioIdx(buttonIdx);
 
         // 지금 내 슬라이더가 안흘러가는 중이면 켜
-        if (SliderBackground[audioIdx].activeSelf == false)
+        if (SliderBackground[audioIdx].activeSelf == false && (buttons[AudioIdx(buttonIdx)] != (Buttons)buttonIdx))
         {
             SliderBackground[audioIdx].gameObject.SetActive(true);
-            FillSliderOverTime(SliderBackground[audioIdx].GetComponent<Slider>());
+            FillSliderOverTime(Get<Slider>(audioIdx),audioIdx);
+        }
 
-        }
         //전에 눌린게 있었다면 그 색은 원래 색으로 바꿔주고
-        if (ButtonType[audioIdx] != -1)
-        {
-            GetButton(ButtonType[audioIdx]).GetComponent<Image>().color = Color.white;
+        if (buttons[audioIdx] != Buttons.None) 
+        { 
+            GetButton((int)buttons[audioIdx]).GetComponent<Image>().color = Color.white;
         }
+
         //내가 누른거 활성화 색으로 바꿔줘
-        GetButton(buttonIdx).GetComponent<Image>().color = new Color(1, 1, 1, 0.5f);
+        GetButton(buttonIdx).GetComponent<Image>().color = ActiveColor;
 
         //나는 이제 이거 틀꺼야!
-        ButtonType[audioIdx] = buttonIdx;
-
+        buttons[audioIdx] = (Buttons)buttonIdx;
 
         // 예약
         switch (audioIdx)
         {
             case 0:
                 SyncController.JobCollector_Start_Player0_A = null;
-                SyncController.JobCollector_Start_Player0_A += Play0_A;
+                SyncController.JobCollector_Start_Player0_A += () => Play_Action(audioIdx,buttonIdx,true);
 
                 SyncController.JobCollector_Start_Player0_B = null;
-                SyncController.JobCollector_Start_Player0_B += Play0_B;
+                SyncController.JobCollector_Start_Player0_B += () => Play_Action(audioIdx, buttonIdx, false);
                 break;
             case 1:
                 SyncController.JobCollector_Start_Player1_A = null;
-                SyncController.JobCollector_Start_Player1_A += Play1_A;
+                SyncController.JobCollector_Start_Player1_A += () => Play_Action(audioIdx, buttonIdx, true);
 
                 SyncController.JobCollector_Start_Player1_B = null;
-                SyncController.JobCollector_Start_Player1_B += Play1_B;
+                SyncController.JobCollector_Start_Player1_B += () => Play_Action(audioIdx, buttonIdx, false);
                 break;
             case 2:
                 SyncController.JobCollector_Start_Player2_A = null;
-                SyncController.JobCollector_Start_Player2_A += Play2_A;
+                SyncController.JobCollector_Start_Player2_A += () => Play_Action(audioIdx, buttonIdx, true);
 
                 SyncController.JobCollector_Start_Player2_B = null;
-                SyncController.JobCollector_Start_Player2_B += Play2_B;
+                SyncController.JobCollector_Start_Player2_B += () => Play_Action(audioIdx, buttonIdx, false);
                 break;
             case 3:
                 SyncController.JobCollector_Start_Player3_A = null;
-                SyncController.JobCollector_Start_Player3_A += Play3_A;
+                SyncController.JobCollector_Start_Player3_A += () => Play_Action(audioIdx, buttonIdx, true);
 
                 SyncController.JobCollector_Start_Player3_B = null;
-                SyncController.JobCollector_Start_Player3_B += Play3_B;
+                SyncController.JobCollector_Start_Player3_B += () => Play_Action(audioIdx, buttonIdx, false);
                 break;
 
         }
 
     }
-    public void Volume_Zero(int buttonIdx)
+    /// <summary>
+    /// 곡 제거
+    /// </summary>
+    /// <param name="buttonIdx"></param>
+    public void Delete(int buttonIdx)
     {
-        RecordController.StartREC(Define.RecordMethod.Volume_Zero, buttonIdx);
+        //레코딩 처리
+        RecordController.REC(Define.RecordMethod.Volume_Zero, buttonIdx);
+
+        int audioIdx = AudioIdx(buttonIdx);
+        
+        //버튼 이미지 비 활성화
+        GetButton(buttonIdx).GetComponent<Image>().color = Color.white;
+        //소리끄기
+        GameManager.Sound.SetVolume((Define.Sound)audioIdx, 0);
+        NowAudioPlaying[audioIdx] = false;
+
+        //나는 이제 이거 끌꺼야!
+        buttons[audioIdx] = Buttons.None;
+
+        switch (audioIdx)
+        {
+            case 0:
+                SyncController.JobCollector_Start_Player0_A = null;
+                SyncController.JobCollector_Start_Player0_B = null;
+                break;
+            case 1:
+                SyncController.JobCollector_Start_Player1_A = null;
+                SyncController.JobCollector_Start_Player1_B = null;
+                break;
+            case 2:
+                SyncController.JobCollector_Start_Player2_A = null;
+                SyncController.JobCollector_Start_Player2_B = null;
+                break;
+            case 3:
+                SyncController.JobCollector_Start_Player3_A = null;
+                SyncController.JobCollector_Start_Player3_B = null;
+                break;
+
+        }
 
     }
-
-    public void Volume_Re(int buttonIdx)
+    public void Volume_Zero(int audioIdx)
     {
-        RecordController.StartREC(Define.RecordMethod.Volume_Re, buttonIdx);
+        RecordController.REC(Define.RecordMethod.Volume_Zero, audioIdx);
+        
+        GetButton((int)Buttons.RemoteButton0 + audioIdx).GetComponent<Image>().color = ActiveColor;
 
+        GameManager.Sound.SetVolume((Define.Sound)audioIdx, 0);
+        
     }
 
-    public void Pause()
+    public void Volume_Re(int audioIdx)
+    {
+        RecordController.REC(Define.RecordMethod.Volume_Zero, audioIdx);
+
+        GetButton((int)Buttons.RemoteButton0 + audioIdx).GetComponent<Image>().color = Color.white;
+        
+        GameManager.Sound.SetVolume((Define.Sound)audioIdx, GameManager.Sound.Volume);
+        
+    }
+
+    public void PauseAll()
     {
         Time.timeScale = 0;
     }
-    public void UnPause()
+    public void UnPauseAll()
     {
         Time.timeScale = 1.0f;
 
@@ -848,25 +545,16 @@ public class GameUI : UI_Scene
         return buttonIdx / 6;
     }
 
-    void Play(int audioIdx, int buttonIdx)
+    /// <summary>
+    /// 개별 슬라이더 조작
+    /// </summary>
+    /// <param name="slider"></param>
+    public void FillSliderOverTime(Slider slider, int audioIdx)
     {
-        string tmp = $"S{audioIdx}_{buttonIdx % 6}_a";
-        SoundtrackType sound;
-        if (System.Enum.TryParse(tmp, out sound))
-        {
-            GameManager.Sound.Play(audioIdx, sound, GameManager.Sound.GetVolume(Sound.Play0));
-            GameManager.InGameData.SoundPlayer[0].StartPlayingAnim();
-        }
+        StartCoroutine(FillCoroutine(slider, audioIdx));
     }
 
-
-
-    public void FillSliderOverTime(Slider slider)
-    {
-        StartCoroutine(FillCoroutine(slider));
-    }
-
-    private IEnumerator FillCoroutine(Slider slider)
+    private IEnumerator FillCoroutine(Slider slider, int audioIdx)
     {
         float startTime = Time.time;
 
@@ -880,6 +568,22 @@ public class GameUI : UI_Scene
         }
 
         slider.value = 1;  // 마지막 값 보장
-        slider.gameObject.SetActive(false);
+        SliderBackground[audioIdx].SetActive(false);
+        
     }
+
+    bool NowUsingRemote()
+    {
+        for (int audioIdx = 0; audioIdx < TYPENUM; audioIdx++)
+        {
+            if (RemoteButtonHold[audioIdx])
+            {
+                return true;
+            }
+                
+        }
+
+        return false;
+    }
+
 }

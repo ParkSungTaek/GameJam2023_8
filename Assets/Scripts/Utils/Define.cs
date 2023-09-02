@@ -180,6 +180,7 @@ public class Define
     public enum RecordMethod
     {
         Add,
+        Delete,
         Volume_Zero,
         Volume_Re,
     }

@@ -25,6 +25,44 @@ public class AchievementPopup : UI_PopUp
 
         Arrow,
     }
+
+    enum Link_Idx
+    {
+        Button0,
+        Button1,
+        Button2,
+        Button3,
+        Button4,
+        Button5,
+
+        Button6,
+        Button7,
+        Button8,
+        Button9,
+        Button10,
+        Button11,
+
+        Button12,
+        Button13,
+        Button14,
+        Button15,
+        Button16,
+        Button17,
+
+        Button18,
+        Button19,
+        Button20,
+        Button21,
+        Button22,
+        Button23,
+
+        None,
+        PlayPause,
+        RemoteButton0,
+        RemoteButton1,
+        RemoteButton2,
+        RemoteButton3,
+    }
     Vector3 StartUIPosition;
 
     Vector3 MoveUIVec = new Vector3(900, 0, 0);
@@ -59,41 +97,23 @@ public class AchievementPopup : UI_PopUp
     public static void AchievementPlay(int idx)
     {
         InGameDataManager.Achievement achievement = GameManager.InGameData.Achievements[idx];
-        if (achievement.Track0 != "None")
-        {
-            GameUI.Instance.ButtonAction(achievement.Track0, false, true);
-        }
-        else
-        {
-            GameUI.Instance.ButtonAction("Button0", true);
-        }
 
-        if (achievement.Track1 != "None")
+        Link_Idx button;
+        if (System.Enum.TryParse(achievement.Track0, out button))
         {
-            GameUI.Instance.ButtonAction(achievement.Track1, false, true);
+            GameUI.Instance.Add((int)button);
         }
-        else
+        if (System.Enum.TryParse(achievement.Track1, out button))
         {
-            GameUI.Instance.ButtonAction("Button6", true);
-
+            GameUI.Instance.Add((int)button);
         }
-
-        if (achievement.Track2 != "None")
+        if (System.Enum.TryParse(achievement.Track2, out button))
         {
-            GameUI.Instance.ButtonAction(achievement.Track2, false, true);
+            GameUI.Instance.Add((int)button);
         }
-        else
+        if (System.Enum.TryParse(achievement.Track3, out button))
         {
-            GameUI.Instance.ButtonAction("Button12", true);
-
-        }
-        if (achievement.Track3 != "None")
-        {
-            GameUI.Instance.ButtonAction(achievement.Track3, false, true);
-        }
-        else
-        {
-            GameUI.Instance.ButtonAction("Button18", true);
+            GameUI.Instance.Add((int)button);
         }
     }
     void Achievement(PointerEventData evt) 

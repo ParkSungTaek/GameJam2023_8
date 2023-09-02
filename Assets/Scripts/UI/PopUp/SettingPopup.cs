@@ -49,7 +49,7 @@ public class SettingPopup : UI_PopUp
         for(int i = 0; i < 4; i++)
         {
             
-            if (GameUI.Instance.IsPlaying[i])
+            if (GameUI.Instance.NowAudioPlaying[i])
             {
                 GameManager.Sound.SetVolume((Define.Sound)i, volume);
             }

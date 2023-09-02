@@ -38,21 +38,26 @@ public class SyncController : MonoBehaviour
 
     #region SyncSystem
 
+
+    public static Action JobCollector_Start_A_renew { get; set; }
+    public static Action JobCollector_End_A_renew { get; set; }
+    public static Action JobCollector_Start_B_renew { get; set; }
+    public static Action JobCollector_End_B_renew { get; set; }
+
+
     public static Action JobCollector_Start_A { get; set; }
     public static Action JobCollector_End_A { get; set; }
     public static Action JobCollector_Start_B { get; set; }
     public static Action JobCollector_End_B { get; set; }
-
+                        
     public static Action JobCollector_Start_Player0_A { get; set; }
     public static Action JobCollector_Start_Player0_B { get; set; }
-    
+                        
     public static Action JobCollector_Start_Player1_A { get; set; }
     public static Action JobCollector_Start_Player1_B { get; set; }
-    
+                        
     public static Action JobCollector_Start_Player2_A { get; set; }
     public static Action JobCollector_Start_Player2_B { get; set; }
-    
-
     public static Action JobCollector_Start_Player3_A { get; set; }
     public static Action JobCollector_Start_Player3_B { get; set; }
     
