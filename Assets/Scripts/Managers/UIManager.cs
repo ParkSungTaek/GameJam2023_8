@@ -91,6 +91,7 @@ public class UIManager
         if (string.IsNullOrEmpty(name))
             name = typeof(T).Name;
 
+        
         GameObject popup;
         T popupUI;
 
@@ -116,7 +117,26 @@ public class UIManager
         popup.transform.SetParent(Root.transform);
         popup.SetActive(true);
 
+
         return popupUI;
+    }
+
+    public T GetRecentPopup<T>() where T : UI_PopUp
+    {
+        if (_popupStack.Count != 0)
+        {
+            UI_PopUp popupUI = _popupStack.Peek();
+            if (popupUI is T)
+            {
+                return (T)popupUI;
+            }
+            else
+            {
+                Debug.Log($"Recent PopUp is not {typeof(T).Name}");
+            }
+        }
+
+        return null;
     }
 
     /// <summary>

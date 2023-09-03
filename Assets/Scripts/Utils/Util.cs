@@ -82,6 +82,7 @@ public class Util
 
             path = string.Concat(name.Substring(0, idx), 's');
             handle = path.ToLower();
+            Debug.Log(handle);
         }
         else if (string.IsNullOrEmpty(handle))
         {
@@ -97,6 +98,7 @@ public class Util
             return default(Handler);
         }
         string json = jsonTxt.text;
+
         return JsonUtility.FromJson<Handler>($"{{\"{handle}\" : {json} }}");
     }
     public static GameObject GetObjRaycast2D(int LayerMask = (1<<0))

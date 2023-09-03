@@ -5,6 +5,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using static RecordController;
 
 public class SettingPopup : UI_PopUp
 {
@@ -90,7 +91,8 @@ public class SettingPopup : UI_PopUp
 
     public void PlayRecorededFile(PointerEventData evt)
     {
-        RecordController.Instance.PlayRecordedMusic();
+        GameManager.UI.ShowPopUpUI<SavedFiles>();
+        //RecordController.Instance.PlayRecordedMusic();
     }
 
 

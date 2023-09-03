@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Xml.Linq;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using static Define;
@@ -15,37 +16,17 @@ public class RecordController : MonoBehaviour
 
     public static bool IsREC { get; set; } = false;
 
-    RecordData nowREC;
+    RecordDataHandler.RecordData nowREC;
     float RECStartTime;
     string Name;
 
     Coroutine[] CommendList;
-    [Serializable]
-    public class SaveDataHandler
-    {
-        public List<RecordData> DataList = new List<RecordData>();
-
-    }
-
-    SaveDataHandler RecordedList { get; set; }
-    [Serializable]
-    public class RecordData
-    {
-        public string name;
-        public bool startA;
-        public int[] StartSet = new int[4];
-
-        public List<RecordDataPacket> SaveDataPackets = new List<RecordDataPacket>();
-
-    }
-    [Serializable]
-    public class RecordDataPacket
-    {
-        public float Time;
-        public int Protocol;
-        public int Input;
-    }
+    
+    public RecordDataHandler RecordedList { get; set; }
+    
     static int idx = 0;
+
+    static string path = Application.dataPath + "/Resources/Jsons/RecordedDatas.json";
     static void Init()
     {
         if (_instance == null)
@@ -59,11 +40,14 @@ public class RecordController : MonoBehaviour
             DontDestroyOnLoad(gm);
             _instance = gm.GetComponent<RecordController>();
 
-            Instance.Name = PlayerPrefs.GetString("Record", $"{idx}");
-            //Instance.SavedData = Util.ParseJson<SaveDataHandler>();
-            Instance.RecordedList = new SaveDataHandler();
+            string json = System.IO.File.ReadAllText(path);
+            Instance.RecordedList = JsonUtility.FromJson<RecordDataHandler>(json);
+
+            
+
+
         }
-        
+
     }
 
 
@@ -99,7 +83,7 @@ public class RecordController : MonoBehaviour
     {
         Debug.Log("RECSTART!");
         IsREC = true;
-        Instance.nowREC = new RecordData();
+        Instance.nowREC = new RecordDataHandler.RecordData();
         Instance.RECStartTime = Time.time;
         Instance.nowREC.startA = SyncController.APart;
         for(int i = 0; i < 4; i++)
@@ -133,7 +117,7 @@ public class RecordController : MonoBehaviour
 
     void rec(Define.RecordProtocol recordMethod, int buttonName = -1)
     {
-        RecordDataPacket recordDataPacket = new RecordDataPacket();
+        RecordDataHandler.RecordDataPacket recordDataPacket = new RecordDataHandler.RecordDataPacket();
         recordDataPacket.Time = Time.time - Instance.RECStartTime;
         recordDataPacket.Protocol = (int)recordMethod;
         recordDataPacket.Input = buttonName;
@@ -148,14 +132,29 @@ public class RecordController : MonoBehaviour
     void endREC()
     {
         IsREC = false;
-        Debug.Log(Instance.nowREC.SaveDataPackets);
-        Instance.RecordedList.DataList.Add(Instance.nowREC);
+        Instance.nowREC.name = $"HelloWorld{RecordedList.recorddatas.Count}";
+        Instance.RecordedList.recorddatas.Add(Instance.nowREC);
+        
+        string RecordedData = JsonUtility.ToJson(RecordedList);
+        System.IO.File.WriteAllText(path, RecordedData);
+
+        if(GameManager.UI.GetRecentPopup<SavedFiles>() != null)
+        {
+            GameManager.UI.GetRecentPopup<SavedFiles>()?.SetTxt();
+
+        }
+        else
+        {
+            Debug.Log("WTF??");
+        }
+
+        Debug.Log(Instance.nowREC.SaveDataPackets.Count);
         Instance.nowREC = null;
         
     }
 
     
-    IEnumerator PlayPacket(RecordDataPacket recordDataPacket)
+    IEnumerator PlayPacket(RecordDataHandler.RecordDataPacket recordDataPacket)
     {
         //GameUI.Instance.
         yield return new WaitForSeconds(recordDataPacket.Time);
@@ -179,21 +178,34 @@ public class RecordController : MonoBehaviour
                 break;
         }
     }
+
     public void PlayRecordedMusic()
     {
-        RecordData recordData = RecordedList.DataList[0];
-        for(int i = 0; i < 4; i++)
+        RecordDataHandler.RecordData recordData = RecordedList.recorddatas[0];
+        for (int i = 0; i < 4; i++)
         {
 
             GameUI.Instance.Add(recordData.StartSet[i]);
         }
         CommendList = new Coroutine[recordData.SaveDataPackets.Count];
-        for (int i = 0;i< recordData.SaveDataPackets.Count;i++)
+        for (int i = 0; i < recordData.SaveDataPackets.Count; i++)
         {
             CommendList[i] = StartCoroutine(PlayPacket(recordData.SaveDataPackets[i]));
-        }   
+        }
     }
 
+    public void PlayRecordedMusic(RecordDataHandler.RecordData recordData)
+    {
+        for (int i = 0; i < 4; i++)
+        {
 
+            GameUI.Instance.Add(recordData.StartSet[i]);
+        }
+        CommendList = new Coroutine[recordData.SaveDataPackets.Count];
+        for (int i = 0; i < recordData.SaveDataPackets.Count; i++)
+        {
+            CommendList[i] = StartCoroutine(PlayPacket(recordData.SaveDataPackets[i]));
+        }
+    }
 
 }

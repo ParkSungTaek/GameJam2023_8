@@ -530,7 +530,7 @@ public class GameUI : UI_Scene
 
     public void Volume_Re(int audioIdx)
     {
-        RecordController.REC(Define.RecordProtocol.Volume_Zero, audioIdx);
+        RecordController.REC(Define.RecordProtocol.Volume_Re, audioIdx);
 
         GetButton((int)Buttons.RemoteButton0 + audioIdx).GetComponent<Image>().color = Color.white;
         
