@@ -86,8 +86,10 @@ public class RecordController : MonoBehaviour
         Instance.nowREC = new RecordDataHandler.RecordData();
         Instance.RECStartTime = Time.time;
         Instance.nowREC.startA = SyncController.APart;
+
         for(int i = 0; i < 4; i++)
         {
+            Instance.nowREC.NowPlaying[i] = GameUI.Instance.NowAudioPlaying[i];
             Instance.nowREC.StartSet[i] = GameUI.Instance.PlayButton(i);
         }
         SyncController.JobCollector_Start_A -= StartREC;
@@ -179,33 +181,46 @@ public class RecordController : MonoBehaviour
         }
     }
 
-    public void PlayRecordedMusic()
-    {
-        RecordDataHandler.RecordData recordData = RecordedList.recorddatas[0];
-        for (int i = 0; i < 4; i++)
-        {
-
-            GameUI.Instance.Add(recordData.StartSet[i]);
-        }
-        CommendList = new Coroutine[recordData.SaveDataPackets.Count];
-        for (int i = 0; i < recordData.SaveDataPackets.Count; i++)
-        {
-            CommendList[i] = StartCoroutine(PlayPacket(recordData.SaveDataPackets[i]));
-        }
-    }
-
+  
     public void PlayRecordedMusic(RecordDataHandler.RecordData recordData)
     {
+        Debug.Log("RecordedMusicPlay!!");
         for (int i = 0; i < 4; i++)
         {
+            if (recordData.NowPlaying[i])
+            {
+                GameUI.Instance.Volume_Re(i);
+            }
+            else
+            {
+                GameUI.Instance.Volume_Zero(i);
 
+            }
+
+            //GameUI Buttons.None == 24
+            if (recordData.StartSet[i] == (int)GameUI.Buttons.None)
+            {
+                GameUI.Instance.ButtonAction((int)GameUI.Instance.buttons[i]);
+            }
             GameUI.Instance.Add(recordData.StartSet[i]);
+
         }
         CommendList = new Coroutine[recordData.SaveDataPackets.Count];
         for (int i = 0; i < recordData.SaveDataPackets.Count; i++)
         {
             CommendList[i] = StartCoroutine(PlayPacket(recordData.SaveDataPackets[i]));
         }
-    }
 
+    }
+    public void EndRecordedMusic()
+    {
+        Debug.Log("RecordedMusicEnd!!");
+        for (int i = 0; i < CommendList.Length; i++)
+        {
+            if (CommendList[i] != null)
+            {
+                StopCoroutine(CommendList[i]);
+            }
+        }
+    }
 }

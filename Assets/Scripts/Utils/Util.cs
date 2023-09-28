@@ -97,9 +97,21 @@ public class Util
             Debug.LogError($"Can't load json : {path}");
             return default(Handler);
         }
-        string json = jsonTxt.text;
 
-        return JsonUtility.FromJson<Handler>($"{{\"{handle}\" : {json} }}");
+        
+        Resources.UnloadAsset(jsonTxt);
+        try{
+            return JsonUtility.FromJson<Handler>($"{{\"{handle}\" : {jsonTxt.text} }}");
+        }
+        catch(Exception e)
+        {
+            Debug.Log("똑띠하쇼!");
+            return default(Handler);
+        }
+        finally
+        {
+            Resources.UnloadAsset(jsonTxt);
+        }
     }
     public static GameObject GetObjRaycast2D(int LayerMask = (1<<0))
     {

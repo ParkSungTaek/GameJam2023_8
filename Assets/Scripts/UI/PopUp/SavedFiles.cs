@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
+using System;
 
 public class SavedFiles : UI_PopUp
 {
@@ -61,8 +62,16 @@ public class SavedFiles : UI_PopUp
         {
             if (RecordController.Instance.RecordedList.recorddatas.Count > StartIDX + (int)button)
             {
-                Debug.Log("PLZPlay");
-                RecordController.Instance.PlayRecordedMusic(RecordController.Instance.RecordedList.recorddatas[StartIDX + (int)button]);
+
+                if (RecordController.Instance.RecordedList.recorddatas[StartIDX + (int)button].startA)
+                {
+                    SyncController.JobCollector_Start_A_OneTime += () => RecordController.Instance.PlayRecordedMusic(RecordController.Instance.RecordedList.recorddatas[StartIDX + (int)button]);
+                }
+                else
+                {
+                    SyncController.JobCollector_Start_B_OneTime += () => RecordController.Instance.PlayRecordedMusic(RecordController.Instance.RecordedList.recorddatas[StartIDX + (int)button]);
+
+                }
             }
         }
         else

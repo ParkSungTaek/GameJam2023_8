@@ -27,14 +27,17 @@ public class GameUI : UI_Scene
     /// <summary>
     /// 무슨 버튼을 눌렀는지 기억
     /// </summary>
-    Buttons[] buttons { get; set; } = new Buttons[TYPENUM];
+    public Buttons[] buttons { get; set; } = new Buttons[TYPENUM];
     /// <summary>
     /// 현재 idx 플레이어에서 어떤 노래를 플레이중인가?
     /// </summary>
     /// <param name="idx">플레이어 idx </param>
     /// <returns></returns>
     public int PlayButton(int idx) { return (int)buttons[idx]; }
-    public bool[] NowAudioPlaying { get; set; } = new bool[TYPENUM] { false, false, false, false };
+    /// <summary>
+    /// 현재 해당 오디오가 Play중인가?
+    /// </summary>
+    public bool[] NowAudioPlaying { get; set; } = new bool[TYPENUM] { true, true, true, true };
     const float deltaTime = 0.5f;
     GameObject[] SliderBackground { get; set; } = new GameObject[TYPENUM];
 
@@ -46,7 +49,7 @@ public class GameUI : UI_Scene
     {
         Road,
     }
-    enum Buttons
+    public enum Buttons
     {
         Button0,
         Button1,
@@ -253,15 +256,19 @@ public class GameUI : UI_Scene
         {
             audioIdx = button - Buttons.RemoteButton0;
             //노래가 안틀어져있으면 할 일이 없어
-            RemoteButtonClick[audioIdx] = true;
-            if (buttons[audioIdx] == Buttons.None)
-            {
-                return;
-            }
-
-            remoteButtonsCoroutine[audioIdx] = StartCoroutine(RemoteButtonsCoroutine(audioIdx));
-
+            RemoteButtonDown(audioIdx);
         }
+    }
+    public void RemoteButtonDown(int audioIdx)
+    {
+        //노래가 안틀어져있으면 할 일이 없어
+        RemoteButtonClick[audioIdx] = true;
+        if (buttons[audioIdx] == Buttons.None)
+        {
+            return;
+        }
+        remoteButtonsCoroutine[audioIdx] = StartCoroutine(RemoteButtonsCoroutine(audioIdx));
+
     }
     IEnumerator RemoteButtonsCoroutine(int audioIdx)
     {
@@ -403,16 +410,17 @@ public class GameUI : UI_Scene
         }
         FindAcivement();
     }
-    
-    
+
+
     #endregion Buttons
 
 
     /// <summary>
     /// 곡 넣기 & 바꾸기
     /// </summary>
-    /// <param name="buttonIdx"></param>
-    public void Add(int buttonIdx)
+    /// <param name="buttonIdx">어떤 버튼을 눌렀는가?</param>
+    /// <param name="playMusic">노래를 틀 것인가?</param>
+    public void Add(int buttonIdx, int audioIdx = 0, bool None = false)
     {
         if (buttonIdx == (int)Buttons.None) { return; } 
         //레코딩 처리 
@@ -420,7 +428,15 @@ public class GameUI : UI_Scene
 
         //타임슬라이더 처리
         TimeSlider.Init();
-        int audioIdx = AudioIdx(buttonIdx);
+
+        if (None)
+        {
+            //버튼 비활성화 & 노래 키고 & 노래 NULL로 바꾸고~
+        }
+        
+        audioIdx = AudioIdx(buttonIdx);
+
+       
 
         // 지금 내 슬라이더가 안흘러가는 중이면 켜
         if (SliderBackground[audioIdx].activeSelf == false && (buttons[AudioIdx(buttonIdx)] != (Buttons)buttonIdx))

@@ -14,6 +14,7 @@ public class RecordDataHandler
         public string name;
         public bool startA;
         public int[] StartSet = new int[4];
+        public bool[] NowPlaying = new bool[4];
 
         public List<RecordDataPacket> SaveDataPackets = new List<RecordDataPacket>();
 
