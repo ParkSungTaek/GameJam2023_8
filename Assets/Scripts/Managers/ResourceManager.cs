@@ -40,7 +40,7 @@ public class ResourceManager
 
         return _cache[path] as T;
     }
-
+    
     public GameObject Instantiate(string path, Transform parent = null) => Instantiate<GameObject>(path, parent);
  
     public T Instantiate<T>(string path, Transform parent = null, Define.PoolingType poolingType = Define.PoolingType.DontPool) where T : UnityEngine.Object

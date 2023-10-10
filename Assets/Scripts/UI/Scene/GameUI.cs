@@ -7,7 +7,6 @@ using System;
 using static Define;
 using System.Reflection;
 using System.Collections;
-using UnityEditor.Presets;
 
 public class GameUI : UI_Scene
 {
@@ -44,7 +43,12 @@ public class GameUI : UI_Scene
     Color ActiveColor = new Color(1, 1, 1, 0.5f);
     #endregion Data
 
-
+    enum Images
+    {
+        SKY,
+        SUN,
+        CITY,
+    }
     enum GameObjects
     {
         Road,
@@ -123,6 +127,7 @@ public class GameUI : UI_Scene
         Bind<Button>(typeof(Buttons));
         Bind<TMP_Text>(typeof(Texts));
         Bind<Slider>(typeof(Sliders));
+        Bind<Image>(typeof(Images));
 
         ButtonBind();
 
@@ -356,7 +361,8 @@ public class GameUI : UI_Scene
     
     public void ButtonAction(int buttonIdx)
     {
-        // 내가 누른거랑 달라?
+        if (buttonIdx == (int)Buttons.None) { Debug.Log("None"); return; }
+        // 내가 누른거랑 달라Buttons?
         if ((buttons[AudioIdx(buttonIdx)] != (Buttons)buttonIdx))
         {
             //노래 추가
@@ -376,7 +382,6 @@ public class GameUI : UI_Scene
 
     /// <summary>
     /// 이 아이디어의 장점 : 깔끔함, 재사용성, 중복코드 감소
-    /// 
     /// </summary>
     /// <param name="audioIdx"></param>
     /// <param name="buttonIdx"></param>
@@ -404,7 +409,9 @@ public class GameUI : UI_Scene
             {
                 GameManager.Sound.Play(audioIdx, sound, GameManager.Sound.Volume);
             }
-
+            //New
+            TypesImage(audioIdx, buttonIdx % 6);
+            //Old
             GameManager.InGameData.SoundPlayer[audioIdx].StartPlayingAnim();
             NowAudioPlaying[audioIdx] = true;
         }
@@ -414,13 +421,12 @@ public class GameUI : UI_Scene
 
     #endregion Buttons
 
-
+    #region Action
     /// <summary>
     /// 곡 넣기 & 바꾸기
     /// </summary>
     /// <param name="buttonIdx">어떤 버튼을 눌렀는가?</param>
-    /// <param name="playMusic">노래를 틀 것인가?</param>
-    public void Add(int buttonIdx, int audioIdx = 0, bool None = false)
+    public void Add(int buttonIdx )//int audioIdx = 0, bool None = false)
     {
         if (buttonIdx == (int)Buttons.None) { return; } 
         //레코딩 처리 
@@ -429,14 +435,8 @@ public class GameUI : UI_Scene
         //타임슬라이더 처리
         TimeSlider.Init();
 
-        if (None)
-        {
-            //버튼 비활성화 & 노래 키고 & 노래 NULL로 바꾸고~
-        }
-        
-        audioIdx = AudioIdx(buttonIdx);
+        int audioIdx = AudioIdx(buttonIdx);
 
-       
 
         // 지금 내 슬라이더가 안흘러가는 중이면 켜
         if (SliderBackground[audioIdx].activeSelf == false && (buttons[AudioIdx(buttonIdx)] != (Buttons)buttonIdx))
@@ -563,6 +563,39 @@ public class GameUI : UI_Scene
         Time.timeScale = 1.0f;
 
     }
+
+    #endregion
+
+    #region Image
+
+    /// <summary>
+    /// 버튼에 따른 이미지 변경
+    /// </summary>
+    /// <param name="audioIDX">오디오 타입 0~3</param>
+    /// <param name="buttonIDX">버튼 타입 0~5</param>
+    public void TypesImage(int audioIDX, int buttonIDX)
+    {
+        switch (audioIDX)
+        {
+            case (int)Define.Types.Land:
+
+                break;
+            case (int)Define.Types.City:
+                GetImage((int)Images.CITY).sprite = GameManager.Resource.Load<Sprite>($"Sprites/City/{buttonIDX}");
+
+                break;
+            case (int)Define.Types.Sun:
+                GetImage((int)Images.SUN).sprite = GameManager.Resource.Load<Sprite>($"Sprites/Sun/{buttonIDX}");
+                break;
+            case (int)Define.Types.Sky:
+                GetImage((int)Images.SKY).sprite = GameManager.Resource.Load<Sprite>($"Sprites/Sky/{buttonIDX}");
+
+                break;
+            default: break;
+        }
+    }
+
+    #endregion
 
     int AudioIdx(int buttonIdx)
     {

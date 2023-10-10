@@ -31,26 +31,13 @@ public class SoundManager
             }
 
             //GetOrAddAudioClip 전체 로딩
-            string[] soundtrackType0 = Enum.GetNames(typeof(SoundtrackType0));
-            for (int i = 0; i < (int)SoundtrackType0.MaxCount; i++)
+            string[] soundtrackType = Enum.GetNames(typeof(SoundtrackType));
+            for (int i = 0; i < (int)SoundtrackType.MaxCount; i++)
             {
-                GetOrAddAudioClip(soundtrackType0[i]);
+                GetOrAddAudioClip(soundtrackType[i]);
             }
-            string[] soundtrackType1 = Enum.GetNames(typeof(SoundtrackType1));
-            for (int i = 0; i < (int)SoundtrackType1.MaxCount; i++)
-            {
-                GetOrAddAudioClip(soundtrackType1[i]);
-            }
-            string[] soundtrackType2 = Enum.GetNames(typeof(SoundtrackType2));
-            for (int i = 0; i < (int)SoundtrackType2.MaxCount; i++)
-            {
-                GetOrAddAudioClip(soundtrackType2[i]);
-            }
-            string[] soundtrackType3 = Enum.GetNames(typeof(SoundtrackType3));
-            for (int i = 0; i < (int)SoundtrackType3.MaxCount; i++)
-            {
-                GetOrAddAudioClip(soundtrackType3[i]);
-            }
+
+          
         }
         
     }
@@ -77,48 +64,6 @@ public class SoundManager
         Define.Sound player = (Define.Sound)audioIdx;
 
         string path = $"{BGMSound}";
-        AudioClip audioClip = GetOrAddAudioClip(path, player);
-        Play(audioClip, player, volume);
-    }
-
-    public void Play(Define.SoundtrackType0 BGMSound, float volume = 1.0f)
-    {
-        Define.Sound player;
-
-        player = Define.Sound.Play0;
-
-        string path = $"{BGMSound}";
-        AudioClip audioClip = GetOrAddAudioClip(path, player);
-        Play(audioClip, player, volume);
-    }
-    public void Play(Define.SoundtrackType1 BGMSound, float volume = 1.0f)
-    {
-        Define.Sound player;
-        player = Define.Sound.Play1;
-
-        string path = $"{BGMSound}";
-        GameManager.InGameData.SoundtrackType1 = BGMSound;
-        AudioClip audioClip = GetOrAddAudioClip(path, player);
-        Play(audioClip, player, volume);
-    }
-    public void Play(Define.SoundtrackType2 BGMSound, float volume = 1.0f)
-    {
-        Define.Sound player;
-        player = Define.Sound.Play2;
-
-        
-        string path = $"{BGMSound}";
-        GameManager.InGameData.SoundtrackType2 = BGMSound;
-        AudioClip audioClip = GetOrAddAudioClip(path, player);
-        Play(audioClip, player, volume);
-    }
-    public void Play(Define.SoundtrackType3 BGMSound, float volume = 1.0f)
-    {
-        Define.Sound player;
-        player = Define.Sound.Play3;
-
-        string path = $"{BGMSound}";
-        GameManager.InGameData.SoundtrackType3 = BGMSound;
         AudioClip audioClip = GetOrAddAudioClip(path, player);
         Play(audioClip, player, volume);
     }

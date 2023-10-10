@@ -1,14 +1,21 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using System.Xml.Linq;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using static Define;
 using static RecordController;
+using static RecordDataHandler;
 
 public class RecordController : MonoBehaviour
 {
+#if UNITY_EDITOR
+    public static string path = Application.dataPath + "/Resources/Jsons/RecordedDatas.json";
+#elif  UNITY_ANDROID
+    public static string path = Path.Combine(Application.persistentDataPath, "RecordedDatas.Json");
+#endif
 
     static RecordController _instance;
     public static RecordController Instance { get { Init(); return _instance; } private set { _instance = value; } }
@@ -26,8 +33,7 @@ public class RecordController : MonoBehaviour
     
     static int idx = 0;
 
-    static string path = Application.dataPath + "/Resources/Jsons/RecordedDatas.json";
-    static void Init()
+    public static void Init()
     {
         if (_instance == null)
         {
@@ -39,11 +45,32 @@ public class RecordController : MonoBehaviour
             }
             DontDestroyOnLoad(gm);
             _instance = gm.GetComponent<RecordController>();
+#if UNITY_EDITOR
+#elif UNITY_ANDROID
+            //Directory.CreateDirectory(Path.GetDirectoryName(path)); // 필요한 경우 디렉토리 생성
+#endif      
+            FileStream fileStream;
+            string tmp;
+            byte[] data;
+            if (!File.Exists(path))
+            {
+                fileStream = new FileStream(path, FileMode.Create);
 
-            string json = System.IO.File.ReadAllText(path);
-            Instance.RecordedList = JsonUtility.FromJson<RecordDataHandler>(json);
+                tmp = "{\r\n  \"recorddatas\": [\r\n    \r\n  ]\r\n}";
+                data = Encoding.UTF8.GetBytes(tmp);
+                fileStream.Write(data, 0, data.Length);
+                fileStream.Close();
+            }
 
             
+            fileStream = new FileStream(path, FileMode.Open);
+            data = new byte[fileStream.Length];
+            fileStream.Read(data, 0, data.Length);
+            string json = Encoding.UTF8.GetString(data);
+
+
+            
+            Instance.RecordedList = JsonUtility.FromJson<RecordDataHandler>(json);
 
 
         }
@@ -138,6 +165,11 @@ public class RecordController : MonoBehaviour
         Instance.RecordedList.recorddatas.Add(Instance.nowREC);
         
         string RecordedData = JsonUtility.ToJson(RecordedList);
+#if UNITY_EDITOR
+#elif UNITY_ANDROID
+        
+        Directory.CreateDirectory(Path.GetDirectoryName(path)); // 필요한 경우 디렉토리 생성
+#endif
         System.IO.File.WriteAllText(path, RecordedData);
 
         if(GameManager.UI.GetRecentPopup<SavedFiles>() != null)
@@ -184,6 +216,8 @@ public class RecordController : MonoBehaviour
   
     public void PlayRecordedMusic(RecordDataHandler.RecordData recordData)
     {
+
+        
         Debug.Log("RecordedMusicPlay!!");
         for (int i = 0; i < 4; i++)
         {

@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
 using System;
+using System.IO;
 
 public class SavedFiles : UI_PopUp
 {
@@ -30,6 +31,7 @@ public class SavedFiles : UI_PopUp
     }
     const int PageSize = 5;
     public int StartIDX { get; set; } = 0;
+    
     public override void Init()
     {
         base.Init();
@@ -40,10 +42,7 @@ public class SavedFiles : UI_PopUp
         SetTxt();
 
     }
-    private void OnEnable()
-    {
-        SetTxt();
-    }
+    
     #region Btn
     void ButtonBind()
     {
@@ -57,6 +56,8 @@ public class SavedFiles : UI_PopUp
 
     void PlayRecordedFile(PointerEventData evt)
     {
+        //타임슬라이더 처리
+        TimeSlider.Init();
         Buttons button;
         if (System.Enum.TryParse(evt.pointerEnter.gameObject.name, out button))
         {
@@ -74,12 +75,13 @@ public class SavedFiles : UI_PopUp
                 }
             }
         }
+#if UNITY_EDITOR
         else
         {
             Debug.Log($"{evt.pointerEnter.gameObject.name} != save0 ");
         }
+#endif
     }
-
     void ESC(PointerEventData evt)
     {
         GameManager.UI.ClosePopUpUI();
@@ -89,28 +91,29 @@ public class SavedFiles : UI_PopUp
 
     #endregion
 
-    #region Txt
 
     public void SetTxt()
     {
-        Debug.Log("RecordController.Instance.RecordedList.DataList.Count "+RecordController.Instance.RecordedList.recorddatas.Count);
-        for (int i = 0; i < PageSize; i++)
-        {
-            if (RecordController.Instance.RecordedList.recorddatas.Count > StartIDX + i)
+        try{
+            for (int i = 0; i < PageSize; i++)
             {
-                GetText(i).text = RecordController.Instance.RecordedList.recorddatas[StartIDX + i].name;
-
-                Debug.Log("Have "+(StartIDX + i));
-            }
-            else
-            {
-                Debug.Log("None "+ (StartIDX + i));
-                GetText(i).text = "No Data";
+                if (RecordController.Instance.RecordedList.recorddatas.Count > StartIDX + i)
+                {
+                    GetText(i).text = RecordController.Instance.RecordedList.recorddatas[StartIDX + i].name;
+                }
+                else
+                {
+                    GetText(i).text = "No Data";
+                }
             }
         }
+        catch (Exception e)
+        {
+            GetText(0).text = "Error : " + e.Message;
+            GetText(1).text = RecordController.path;
+        }
+        
     }
-
-    #endregion Txt
 
     public override void ReOpen()
     {

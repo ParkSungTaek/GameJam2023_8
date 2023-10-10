@@ -13,11 +13,17 @@ public class Define
         Play1,
         Play2,
         Play3,
-        //Play4,  // 이건 픽스
 
 
         SFX,
         MaxCount
+    }
+    public enum Types
+    {
+        Land,
+        City,
+        Sun,
+        Sky,
     }
 
     public enum SoundtrackType
@@ -78,6 +84,7 @@ public class Define
 
 
     }
+    /*
     public enum SoundtrackType0
     {
         S0_0_a,
@@ -135,6 +142,7 @@ public class Define
         MaxCount
 
     }
+    */
     
     public enum SFX
     {

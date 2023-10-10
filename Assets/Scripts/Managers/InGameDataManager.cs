@@ -9,14 +9,8 @@ using static Define;
 
 public class InGameDataManager
 {
-    #region 현재 플레이중인 음악 
+    
     public const int TYPENUM = 4;
-    public Define.SoundtrackType0 SoundtrackType0 { get; set; }
-    public Define.SoundtrackType1 SoundtrackType1 { get; set; }
-    public Define.SoundtrackType2 SoundtrackType2 { get; set; }
-    public Define.SoundtrackType3 SoundtrackType3 { get; set; }
-    #endregion 현재 플레이중인 음악 
-
     #region Player
     public PlayerController[] SoundPlayer { get; set; }
     const int PlayerNum = 4;
@@ -63,7 +57,7 @@ public class InGameDataManager
             PlayerPrefs.SetInt($"GetActiveAchievements{idx}", 1);
             ActiveAchievementsIndex.Add(idx);
             openedAchievements[idx] = 1;
-            Debug.Log($"Open{idx}");
+            
 
         }
 
@@ -93,10 +87,6 @@ public class InGameDataManager
             openedAchievements[i] = PlayerPrefs.GetInt($"GetActiveAchievements{i}", 0);
         }
 
-        SoundtrackType0 = Define.SoundtrackType0.MaxCount;
-        SoundtrackType1 = Define.SoundtrackType1.MaxCount;
-        SoundtrackType2 = Define.SoundtrackType2.MaxCount;
-        SoundtrackType3 = Define.SoundtrackType3.MaxCount;
 
         ButtonDatas = new ButtonData[24];
 
@@ -121,13 +111,7 @@ public class InGameDataManager
         SetActiveAchievements(0, true);
         SetActiveAchievements(1, true);
         SetActiveAchievements(2, true);
-        /*
-        SetActiveAchievements(3, false);
-        SetActiveAchievements(4, false);
-        SetActiveAchievements(5, false);
-        SetActiveAchievements(6, false);
-        SetActiveAchievements(7, false);
-        */
+        
         for (int i=0;i< Achievementnum; i++)
         {
             if (GetActiveAchievements(i))

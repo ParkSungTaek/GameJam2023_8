@@ -48,6 +48,7 @@ public class GameManager : MonoBehaviour
             _instance._resourceManager.Init();
             _instance._soundManager.Init();
             _instance._inGameDataManager.Init();
+            RecordController.Init();
         }
 
     }
