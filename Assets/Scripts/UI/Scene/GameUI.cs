@@ -411,8 +411,7 @@ public class GameUI : UI_Scene
             }
             //New
             TypesImage(audioIdx, buttonIdx % 6);
-            //Old
-            GameManager.InGameData.SoundPlayer[audioIdx].StartPlayingAnim();
+            
             NowAudioPlaying[audioIdx] = true;
         }
         FindAcivement();
@@ -578,7 +577,7 @@ public class GameUI : UI_Scene
         switch (audioIDX)
         {
             case (int)Define.Types.Land:
-
+                GameManager.InGameData.PlayerState[(int)Define.Types.Land].StartPlayingAnim(buttonIDX);
                 break;
             case (int)Define.Types.City:
                 GetImage((int)Images.CITY).sprite = GameManager.Resource.Load<Sprite>($"Sprites/City/{buttonIDX}");

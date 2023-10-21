@@ -8,45 +8,62 @@ public class Player0State : State
     Vector3[] position = new Vector3[4];
 
     [SerializeField]
-    GameObject[] childObjects;
+    GameObject[,] childObjects;
     const int BGnum = 3;
+    const int BGType = 6;
 
-    Coroutine[] Coroutine;
+
+    Coroutine[,] Coroutine;
     bool isPlaying = false;
     private void Start()
     {
-        childObjects = new GameObject[BGnum];
-        Coroutine = new Coroutine[BGnum];
+        GameManager.InGameData.PlayerState[(int)Define.Types.Land] = this;
+        childObjects = new GameObject[BGType,BGnum];
+        Coroutine = new Coroutine[BGType,BGnum];
         for (int i = 0; i < BGnum; i++)
         {
-            childObjects[i] = transform.GetChild(i).gameObject;
-            position[i] = childObjects[i].transform.localPosition;
+            for(int type = 0;type < BGType; type++)
+            {
+                childObjects[type,i] = transform.Find($"{type}_{i}").gameObject;
+                
+            }
+            position[i] = childObjects[0,i].transform.localPosition;
         }
 
+
+
     }
+    void ActiveIDX(int idx)
+    {
+        for (int i = 0; i < BGnum; i++)
+        {
+            for (int type = 0; type < BGType; type++)
+            {
+                childObjects[type, i].SetActive(false);
+            }
+        }
+        for (int i = 0; i < BGnum; i++)
+        {
+                childObjects[idx, i].SetActive(true);
+
+        }
+    }
+
     /// <summary>
     /// 0 ∂•¿Ã Ω√¿€«ﬂ¿ª ∂ß 
     /// </summary>
     /// <param name="go"></param>
-    public override void StartPlayingAnim(PlayerController go, ButtonData buttonData = null)
+    public override void StartPlayingAnim(int buttonData = 0)
     {
-        base.StartPlayingAnim(go);
+        base.StartPlayingAnim();
 
 
-        GameUI.Instance.SetRoadColor(new Color((193f / 255f), (209f / 255f), 0));
-        for (int i = 0; i < BGnum; i++)
-        {
-            childObjects[i].GetComponent<SpriteRenderer>().color = new Color((193f / 255f), (209f / 255f), 0);
-        }
         if (!isPlaying)
         {
-
             isPlaying = true;
             for (int i = 0; i < BGnum; i++)
             {
-                Coroutine[i] = StartCoroutine(SmoothMove(childObjects[i].transform, i, i - 1));
-
-                //Coroutine[i] = StartCoroutine(SmoothMove(childObjects[i].transform, i, i-1));
+                Coroutine[buttonData, i] = StartCoroutine(SmoothMove(childObjects[buttonData, i].transform, i, i - 1));   
             }
         }
         
@@ -56,12 +73,11 @@ public class Player0State : State
     /// 0 ∂•¿Ã ≥°≥µ¿ª ∂ß 
     /// </summary>
     /// <param name="go"></param>
-    public override void EndPlayingAnim(PlayerController go) 
+    public override void EndPlayingAnim(int buttonData) 
     {
         for (int i = 0; i < BGnum; i++)
         {
-            childObjects[i].GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f);
-            StopCoroutine(Coroutine[i]);
+            StopCoroutine(Coroutine[buttonData, i]);
         }
     }
     public IEnumerator SmoothMove(Transform transform, int startIdx, int endIdx, float moveTime = MOVETIME)

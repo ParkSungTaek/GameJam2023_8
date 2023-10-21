@@ -3,19 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Xml.Linq;
 using UnityEngine;
-using static Define;
-using static RecordController;
-using static RecordDataHandler;
 
 public class RecordController : MonoBehaviour
 {
-#if UNITY_EDITOR
-    public static string path = Application.dataPath + "/Resources/Jsons/RecordedDatas.json";
-#elif  UNITY_ANDROID
-    public static string path = Path.Combine(Application.persistentDataPath, "RecordedDatas.Json");
-#endif
+
+    public static string path;
+
 
     static RecordController _instance;
     public static RecordController Instance { get { Init(); return _instance; } private set { _instance = value; } }
@@ -35,6 +29,11 @@ public class RecordController : MonoBehaviour
 
     public static void Init()
     {
+#if UNITY_EDITOR
+        path = Application.dataPath + "/Resources/Jsons/RecordedDatas.json";
+#elif  UNITY_ANDROID
+        path = Path.Combine(Application.persistentDataPath, "RecordedDatas.Json");
+#endif
         if (_instance == null)
         {
             GameObject gm = GameObject.Find("RecordController");
@@ -45,10 +44,11 @@ public class RecordController : MonoBehaviour
             }
             DontDestroyOnLoad(gm);
             _instance = gm.GetComponent<RecordController>();
+
+
+
 #if UNITY_EDITOR
-#elif UNITY_ANDROID
-            //Directory.CreateDirectory(Path.GetDirectoryName(path)); // 필요한 경우 디렉토리 생성
-#endif      
+            /*
             FileStream fileStream;
             string tmp;
             byte[] data;
@@ -62,15 +62,34 @@ public class RecordController : MonoBehaviour
                 fileStream.Close();
             }
 
-            
+
             fileStream = new FileStream(path, FileMode.Open);
             data = new byte[fileStream.Length];
             fileStream.Read(data, 0, data.Length);
             string json = Encoding.UTF8.GetString(data);
 
 
-            
             Instance.RecordedList = JsonUtility.FromJson<RecordDataHandler>(json);
+            */
+            Instance.RecordedList = Util.LoadSaveData<RecordDataHandler>("RecordedDatas");
+            if (Instance.RecordedList == null)
+            {
+                RecordDataHandler newRecordDataHandler = new RecordDataHandler();
+                Util.SaveJson<RecordDataHandler>(newRecordDataHandler, "RecordedDatas");
+                Instance.RecordedList = newRecordDataHandler;
+            }
+
+
+#elif UNITY_ANDROID
+            Instance.RecordedList = Util.LoadSaveData<RecordDataHandler>("RecordedDatas");
+            if(Instance.RecordedList == null)
+            {
+                RecordDataHandler newRecordDataHandler = new RecordDataHandler();
+                Util.SaveJson<RecordDataHandler>(newRecordDataHandler, "RecordedDatas");
+                Instance.RecordedList = newRecordDataHandler;
+            }
+            //Directory.CreateDirectory(Path.GetDirectoryName(path)); // 필요한 경우 디렉토리 생성
+#endif
 
 
         }
@@ -165,29 +184,29 @@ public class RecordController : MonoBehaviour
         Instance.RecordedList.recorddatas.Add(Instance.nowREC);
         
         string RecordedData = JsonUtility.ToJson(RecordedList);
-#if UNITY_EDITOR
-#elif UNITY_ANDROID
-        
-        Directory.CreateDirectory(Path.GetDirectoryName(path)); // 필요한 경우 디렉토리 생성
-#endif
-        System.IO.File.WriteAllText(path, RecordedData);
 
-        if(GameManager.UI.GetRecentPopup<SavedFiles>() != null)
+#if UNITY_EDITOR
+
+
+        Util.SaveJson<RecordDataHandler>(RecordedList, "RecordedDatas");
+        if (GameManager.UI.GetRecentPopup<SavedFiles>() != null)
         {
             GameManager.UI.GetRecentPopup<SavedFiles>()?.SetTxt();
-
         }
-        else
+
+
+#elif UNITY_ANDROID
+        Util.SaveJson<RecordDataHandler>(RecordedList, "RecordedDatas");
+        if (GameManager.UI.GetRecentPopup<SavedFiles>() != null)
         {
-            Debug.Log("WTF??");
+            GameManager.UI.GetRecentPopup<SavedFiles>()?.SetTxt();
         }
-
-        Debug.Log(Instance.nowREC.SaveDataPackets.Count);
-        Instance.nowREC = null;
         
+#endif
+
     }
 
-    
+
     IEnumerator PlayPacket(RecordDataHandler.RecordDataPacket recordDataPacket)
     {
         //GameUI.Instance.

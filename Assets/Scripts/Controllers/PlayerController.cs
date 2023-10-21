@@ -18,12 +18,12 @@ public class PlayerController : MonoBehaviour
 
     public bool IsPlaying { get; set; } = false;
 
+    /*
     public void StartPlayingAnim(ButtonData data = null)
     {
         if(_state != null)
         {
-            
-            _state.StartPlayingAnim(this, data);
+            _state.StartPlayingAnim(data);
 
         }
         else
@@ -36,7 +36,7 @@ public class PlayerController : MonoBehaviour
     {
         if (_state != null)
         {
-            _state.StartPlayingAnim(this);
+            _state.StartPlayingAnim();
 
         }
         else
@@ -45,6 +45,8 @@ public class PlayerController : MonoBehaviour
         }
         //_state.NowPlayingAnim(this);
     }
+
+    */
     // Start is called before the first frame update
     void Start()
     {

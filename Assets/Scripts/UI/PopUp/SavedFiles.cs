@@ -37,9 +37,8 @@ public class SavedFiles : UI_PopUp
         base.Init();
         Bind<Button>(typeof(Buttons));
         Bind<TMP_Text>(typeof(Texts));
-        
-        ButtonBind();
         SetTxt();
+        ButtonBind();
 
     }
     
@@ -117,5 +116,6 @@ public class SavedFiles : UI_PopUp
 
     public override void ReOpen()
     {
+        SetTxt();
     }
 }
