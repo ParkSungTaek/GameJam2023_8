@@ -59,6 +59,7 @@ public class Util
 
 
     /// <summary>
+    /// json을 Wirte하지 않고 읽기만 하는것을 전제로 빠르게 사용 가능한 Json Parse
     /// json 파일 파싱하여 오브젝트로 반환<br/>
     /// * 필요 클래스<br/>
     /// {0} - 실제 데이터 가지고 있는 클래스<br/>
@@ -107,7 +108,7 @@ public class Util
         }
         catch(Exception e)
         {
-            Debug.Log("똑띠하쇼!");
+            Debug.Log("????");
             return default(Handler);
         }
         finally
@@ -118,15 +119,25 @@ public class Util
 
 
 
-    ///////////////////////////////////////////
 
+
+
+
+    ///////////////////////////////////////////
+    /// <summary>
+    /// Json 정보를 Write하는 방법 
+    /// UNITY_EDITOR 와 UNITY_ANDROID를 기준으로 작성
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="_data"></param>
+    /// <param name="_name"></param>
     public static void SaveJson<T>(T _data, string _name)
     {
         string _jsonText;
 
         //안드로이드에서의 저장 위치를 다르게 해주어야 한다
         //안드로이드의 경우에는 데이터조작을 막기위해 2진데이터로 변환을 해야한다
-        
+        Debug.Log("??");
         string _savePath;
         string _appender = "/userData/";
         string _nameString = _name + ".json";
@@ -143,7 +154,7 @@ public class Util
         if (!Directory.Exists(_builder.ToString()))
         {
             //디렉토리가 없는경우 만들어준다
-            Debug.Log("뭐야");
+            Debug.Log("No Directory");
             Directory.CreateDirectory(_builder.ToString());
 
         }
@@ -160,7 +171,13 @@ public class Util
 
     }
 
-  
+    /// <summary>
+    /// Json 정보를 Read하는 방법 
+    /// UNITY_EDITOR 와 UNITY_ANDROID를 기준으로 작성
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="_name"></param>
+    /// <returns></returns>
     public static T LoadSaveData<T>(string _name)
     {
         
@@ -210,11 +227,11 @@ public class Util
             _gameData = default(T);
         }
         return _gameData;
-        //이 정보를 게임매니저나, 로딩으로 넘겨주는 것이당
     }
+
     //////////////////////////////////////////
     /// <summary>
-    /// /
+    /// 
     /// </summary>
     /// <param name="LayerMask"></param>
     /// <returns></returns>
@@ -252,23 +269,7 @@ public class Util
 
         return target;
     }
-    /*
     
-    public static IEnumerator SmoothMove(Transform transform, Vector3 start, Vector3 end, float moveTime = 1.0f)
-    {
-
-        float startTime = Time.time;
-        float endTime = startTime + moveTime;
-        while (Time.time < endTime)
-        {
-            float t = (Time.time - startTime) / moveTime;
-            transform.position = Vector3.Lerp(start, end, t);
-            yield return null;
-        }
-
-        transform.position = end;
-    }
-    */
     public static IEnumerator SmoothMoveUI(RectTransform transform, Vector3 start, Vector3 end, float moveTime = 1.0f)
     {
 

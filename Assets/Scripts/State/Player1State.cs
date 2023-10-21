@@ -6,9 +6,9 @@ using UnityEngine;
 public class Player1State : State
 {
     
-    public override void StartPlayingAnim(int buttonData = 0) 
+    public override void StartPlayingAnim(PlayerController go, int buttonData) 
     {
-        base.StartPlayingAnim();
+        base.StartPlayingAnim(go, buttonData);
 
     }
     /*

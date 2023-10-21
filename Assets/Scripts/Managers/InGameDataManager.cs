@@ -12,6 +12,7 @@ public class InGameDataManager
     
     public const int TYPENUM = 4;
     #region Player
+    public PlayerController[] SoundPlayer { get; set; }
     const int PlayerNum = 4;
     #endregion Player
 
@@ -71,17 +72,16 @@ public class InGameDataManager
     #endregion
 
 
-    #region PlayerState
-    public State[] PlayerState { get; set; } = new State[4];
-
-
-    #endregion PlayerState
-
-
     /// <summary> InGameData 게임 시작시 초기화</summary>
     public void Init()
     {
+        SoundPlayer = new PlayerController[PlayerNum];
 
+        for(int i = 0; i < PlayerNum; i++)
+        {
+            SoundPlayer[i] = GameObject.Find($"Player{i}")?.GetComponent<PlayerController>();
+            
+        }
         for(int i=0;i< Achievementnum; i++)
         {
             openedAchievements[i] = PlayerPrefs.GetInt($"GetActiveAchievements{i}", 0);
@@ -90,10 +90,7 @@ public class InGameDataManager
 
         ButtonDatas = new ButtonData[24];
 
-        for(int i = 0; i < 24; i++)
-        {
-            ButtonDatas[i].idx = i;
-        }
+
 
 
         ButtonDatas[6] = new ButtonData();

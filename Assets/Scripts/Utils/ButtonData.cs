@@ -4,9 +4,7 @@ using UnityEngine;
 
 public class ButtonData 
 {
-    public int idx;
     public Sprite sprite ;
     public Color color;
-
     
 }

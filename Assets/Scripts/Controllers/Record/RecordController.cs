@@ -48,7 +48,6 @@ public class RecordController : MonoBehaviour
 
 
 #if UNITY_EDITOR
-            /*
             FileStream fileStream;
             string tmp;
             byte[] data;
@@ -70,14 +69,6 @@ public class RecordController : MonoBehaviour
 
 
             Instance.RecordedList = JsonUtility.FromJson<RecordDataHandler>(json);
-            */
-            Instance.RecordedList = Util.LoadSaveData<RecordDataHandler>("RecordedDatas");
-            if (Instance.RecordedList == null)
-            {
-                RecordDataHandler newRecordDataHandler = new RecordDataHandler();
-                Util.SaveJson<RecordDataHandler>(newRecordDataHandler, "RecordedDatas");
-                Instance.RecordedList = newRecordDataHandler;
-            }
 
 
 #elif UNITY_ANDROID
@@ -188,12 +179,15 @@ public class RecordController : MonoBehaviour
 #if UNITY_EDITOR
 
 
-        Util.SaveJson<RecordDataHandler>(RecordedList, "RecordedDatas");
+        System.IO.File.WriteAllText(path, RecordedData);
+
         if (GameManager.UI.GetRecentPopup<SavedFiles>() != null)
         {
             GameManager.UI.GetRecentPopup<SavedFiles>()?.SetTxt();
-        }
 
+        }
+        Debug.Log(Instance.nowREC.SaveDataPackets.Count);
+        Instance.nowREC = null;
 
 #elif UNITY_ANDROID
         Util.SaveJson<RecordDataHandler>(RecordedList, "RecordedDatas");
@@ -203,7 +197,6 @@ public class RecordController : MonoBehaviour
         }
         
 #endif
-
     }
 
 

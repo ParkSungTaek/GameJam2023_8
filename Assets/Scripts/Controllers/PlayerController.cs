@@ -17,26 +17,29 @@ public class PlayerController : MonoBehaviour
     State _state;
 
     public bool IsPlaying { get; set; } = false;
-
-    /*
-    public void StartPlayingAnim(ButtonData data = null)
+    /// <summary>
+    /// 버튼타입 [0~5] (오디오 타입은 신경안씀) 
+    /// </summary>
+    /// <param name="buttonIDX"> 0 이상 5이하 </param>
+    public void StartPlayingAnim(int buttonIDX)
     {
         if(_state != null)
         {
-            _state.StartPlayingAnim(data);
+            
+            _state.StartPlayingAnim(this, buttonIDX);
 
         }
         else
         {
             Debug.Log(gameObject.name + " _stateNone");
         }
-        //_state.NowPlayingAnim(this);
     }
+    /*
     public void EndPlayingAnim()
     {
         if (_state != null)
         {
-            _state.StartPlayingAnim();
+            _state.StartPlayingAnim(this);
 
         }
         else
@@ -45,7 +48,6 @@ public class PlayerController : MonoBehaviour
         }
         //_state.NowPlayingAnim(this);
     }
-
     */
     // Start is called before the first frame update
     void Start()

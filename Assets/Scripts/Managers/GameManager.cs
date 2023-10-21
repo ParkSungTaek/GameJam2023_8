@@ -42,6 +42,8 @@ public class GameManager : MonoBehaviour
                 gm = new GameObject { name = "GameManager" };
                 gm.AddComponent<GameManager>();
             }
+
+            Application.targetFrameRate = 60;
             _instance = gm.GetComponent<GameManager>();
 
             DontDestroyOnLoad(gm);

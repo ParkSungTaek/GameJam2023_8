@@ -48,6 +48,7 @@ public class GameUI : UI_Scene
         SKY,
         SUN,
         CITY,
+        Road,
     }
     enum GameObjects
     {
@@ -166,6 +167,7 @@ public class GameUI : UI_Scene
                 Get<Slider>(i).value = 0;
             }
         };
+        GetImage((int)Images.Road).gameObject.SetActive(false);
     }
 
 
@@ -411,6 +413,8 @@ public class GameUI : UI_Scene
             }
             //New
             TypesImage(audioIdx, buttonIdx % 6);
+            //Old
+            //GameManager.InGameData.SoundPlayer[audioIdx].StartPlayingAnim();
             
             NowAudioPlaying[audioIdx] = true;
         }
@@ -577,7 +581,7 @@ public class GameUI : UI_Scene
         switch (audioIDX)
         {
             case (int)Define.Types.Land:
-                GameManager.InGameData.PlayerState[(int)Define.Types.Land].StartPlayingAnim(buttonIDX);
+                GameManager.InGameData.SoundPlayer[audioIDX].StartPlayingAnim(buttonIDX);
                 break;
             case (int)Define.Types.City:
                 GetImage((int)Images.CITY).sprite = GameManager.Resource.Load<Sprite>($"Sprites/City/{buttonIDX}");
@@ -594,6 +598,41 @@ public class GameUI : UI_Scene
         }
     }
 
+
+
+    public void RoadImage(int buttonIDX)
+    {
+        switch(buttonIDX)
+        {
+            //case 0:
+            //
+            //    break;
+
+            case 1:
+                GetImage((int)Images.Road).gameObject.SetActive(true);
+                GetImage((int)Images.Road).sprite = GameManager.Resource.Load<Sprite>("Sprites/BG/Road1");
+                break;
+
+            //case 2:
+            //    break;
+
+            case 3:
+                GetImage((int)Images.Road).gameObject.SetActive(true);
+                GetImage((int)Images.Road).sprite = GameManager.Resource.Load<Sprite>("Sprites/BG/Road3");
+                break;
+
+            //case 4:
+            //    break;
+
+            //case 5:
+            //    break;
+
+            default :
+                GetImage((int)Images.Road).gameObject.SetActive(false);
+                break;
+
+        }
+    }
     #endregion
 
     int AudioIdx(int buttonIdx)
